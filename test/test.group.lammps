@@ -1,0 +1,47 @@
+units metal 
+dimension 3 
+boundary p p p
+atom_style atomic
+atom_modify map array
+
+variable alloyName string "Al"
+variable Orient string "100"
+variable dLx equal 10
+
+variable nx equal 31
+variable ny equal 31
+variable ns equal 7
+variable aLattice equal 4.05
+lattice fcc ${aLattice} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
+region box block 0 ${nx} 0 ${ny} 0 ${ns} units lattice
+create_box 2 box
+
+group substrate type 1
+group adatom type 2
+
+create_atoms 1 box group substrate
+
+change_box all z delta -${dLx} ${dLx} boundary p p p
+
+create_atoms 2 single 0 0 30 group adatom
+
+# Force field
+variable ffname string "CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy"
+pair_style eam/alloy 
+pair_coeff * * ${ffname} Al Al
+neighbor 2.0 bin
+neigh_modify delay 0 every 1 check yes
+
+# Output
+write_data ${alloyName}_${Orient}_ref.data
+variable pea_avg equal "pe/atoms"
+thermo 50
+thermo_style custom step v_pea_avg pe temp lx ly lz press
+
+# Energy minimization
+fix myMin all box/relax x 0.0 y 0.0 vmax 0.001  
+min_style cg 
+minimize 1e-4 1e-6 1000 100000
+unfix myMin
+reset_timestep 0
+write_data ${alloyName}_${Orient}_min.data

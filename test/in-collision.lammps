@@ -1,0 +1,64 @@
+### SCRIPT TO PERFORM MDMC SIMULATIONS ON SLABS ###
+
+# General settings that should not depend on the specific system (as long as they are alloys)
+units metal 
+dimension 3 
+boundary p p p
+atom_style atomic
+atom_modify map array
+
+# Input variables
+variable na equal 10
+variable nam1 equal ${na}-1
+
+# Output variables
+variable tout equal 50
+variable ndump equal 10
+variable nevery equal 25
+variable nrepeat equal 10
+variable nfreq equal 250
+
+# Crystal lattice and crystal plane orientation
+read_data "Al_100_relax.data"
+group substrate type 1
+group adatoms type 2
+# Interatomic potential
+include "potential.lammps"
+
+variable pea_avg equal "pe/atoms"
+thermo ${tout}
+thermo_style custom step v_pea_avg pe temp lx ly lz press
+
+variable dummyMol atom "gmask(substrate)+2.0*gmask(adatoms)"
+dump myDump all custom ${ndump} collision.dump id type x y z xu yu zu vx vy vz v_dummyMol
+fix avePe all ave/time ${nevery} ${nrepeat} ${nfreq} v_pea_avg ave one file pe.dat
+
+# Molecular dynamics ("MD")
+# create_atoms 2 single 63 63 50 group adatoms
+# velocity adatoms set 0 0 -100
+fix myMD1 substrate nvt temp 300.0 300.0 1.0
+fix myMD2 adatoms nve
+# run 250
+
+# label loop
+# variable i loop ${na}
+#     create_atoms 2 single 63 63 65 group adatoms
+#     velocity adatoms set 0 0 -100
+#     run 250
+#     next i
+# jump SELF loop
+# label break
+
+region inflow sphere 63.0 63.0 55.0 1.0
+group newatom dynamic adatoms region inflow
+label loop
+variable i loop ${na}
+    create_atoms 2 single 63.0 63.0 55.0 group adatoms
+    run 0 post no
+    velocity newatom set 0.0 0.0 -75.0
+    run 500
+    next i
+jump SELF loop
+label break
+
+write_data collision.data

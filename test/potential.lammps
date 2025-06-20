@@ -1,0 +1,6 @@
+variable ffname string "CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy"
+
+pair_style eam/alloy 
+pair_coeff * * ${ffname} Al Al
+neighbor 2.0 bin
+neigh_modify delay 0 every 1 check yes

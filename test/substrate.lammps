@@ -1,0 +1,8 @@
+variable alloyName string "Al"
+variable aLattice equal 4.05
+
+variable Orient string "100"
+variable nx equal 31
+variable ny equal 31
+variable ns equal 7
+lattice fcc ${aLattice} orient x 1 0 0 orient y 0 1 0 orient z 0 0 1
