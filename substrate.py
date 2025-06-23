@@ -65,6 +65,49 @@ def lmp_potential_eam(lmp, ffname, type_names, flavour='eam/alloy') :
     neigh_modify delay 0 every 1 check yes
     """
 
+def lmp_energy_min(lmp, vmax=0.001, etol=1e-4, ftol=1e-6, maxiter=1000, maxeval=100000) :
+
+    """ Substrate energy minimization """
+    
+    # This is most probably going to remain untouched
+    commands=f"""
+    fix myMin all box/relax x 0.0 y 0.0 vmax {vmax}  
+    min_style cg 
+    minimize {etol} {ftol} {maxiter} {maxeval}
+    unfix myMin
+    reset_timestep 0
+    """
+    lmp.commands_string(commands)
+
+def lmp_md_output(lmp, tout) :
+
+    """ Definition of MD thermo output.
+        This should probably be expanded with more variables and dumps! """
+
+    commands=f"""
+    variable pea_avg equal "pe/atoms"
+    thermo {tout}
+    thermo_style custom step v_pea_avg pe temp lx ly lz press
+    """
+    lmp.commands_string(commands)
+
+def lmp_relaxation(lmp, nsteps, genvel=True, seed=None, dt=0.001, T=300.0, tdamp=1.0, P=0.0, pdamp=5.0) :
+
+    assert genvel==False or not(seed==None), "Need to specify a seed when generating velocities"
+
+    if genvel==True :
+        command_genvel=f"velocity all create {T} {seed} rot yes dist gaussian"
+        lmp.command(command_genvel)
+
+    commands=f"""
+    timestep {dt}
+    fix myEQ all npt temp {T} {T} {tdamp} x {P} {P} {pdamp} y {P} {P} {pdamp}
+    run {nsteps}
+    unfix myEQ
+    reset_timestep 0
+    """
+    lmp.commands_string(commands)
+
 #####################################################################
 
 if __name__ == "__main__" :
@@ -76,5 +119,10 @@ if __name__ == "__main__" :
     # lmp_lattice(lmp,a=4.05,nx=31,ny=int(31/np.sqrt(2)),ns=int(7/np.sqrt(2)),phase='fcc',orient='110')
     # lmp_lattice(lmp,a=4.05,nx=int(31/np.sqrt(2)),ny=int(1.5*31/np.sqrt(6)),ns=int(7/np.sqrt(3)),phase='fcc',orient='111')
     lmp_box(lmp,ntypes=2,dLx=10.0)
-    lmp_potential_eam(lmp,'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy',['Al', 'Al'],flavour='eam/alloy')
+    lmp_potential_eam(lmp,'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy',['Al','Al'],flavour='eam/alloy')
     lmp.command("write_data test1.data")
+    lmp_energy_min(lmp)
+    lmp.command("write_data test2.data")
+    lmp_md_output(lmp,tout=50)
+    lmp_relaxation(lmp,nsteps=1000,seed=4928459)
+    lmp.command("write_data test3.data")
