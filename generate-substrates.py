@@ -25,7 +25,8 @@ def generate_substrate(name,
     tout=50,
     nsteps=1000) :
 
-    lmp = lammps.lammps()
+    # lmp = lammps.lammps()
+    lmp = lammps.lammps(cmdargs=['-pk','gpu','1','-sf','gpu'])
     lmp_header(lmp)
     lmp_lattice(lmp,alloy.a,nx,ny,ns,alloy.phase,orient)
     lmp_box(lmp,alloy.ntypes,dLx)
