@@ -23,10 +23,13 @@ def generate_substrate(name,
     seed,
     orient='100',
     tout=50,
-    nsteps=1000) :
+    nsteps=1000,
+    GPU=True) :
 
-    # lmp = lammps.lammps()
-    lmp = lammps.lammps(cmdargs=['-pk','gpu','1','-sf','gpu'])
+    if GPU :
+        lmp = lammps.lammps(cmdargs=['-pk','gpu','1','-sf','gpu'])
+    else :
+        lmp = lammps.lammps()
     lmp_header(lmp)
     lmp_lattice(lmp,alloy.a,nx,ny,ns,alloy.phase,orient)
     lmp_box(lmp,alloy.ntypes,dLx)
