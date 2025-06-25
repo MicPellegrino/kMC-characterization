@@ -20,11 +20,14 @@ def uniform_unit_hemisphere(N) :
 
 ###########################################
 
-def kinetic_energy(Ed,N) :
+def kinetic_energy(Ed,N,a_cut=100) :
     a = 0.3*Ed
-    f = lambda e : 2*a*e/((e+a)**3)
-    F = lambda x : (x*x)/((a+x)**2)
-    Fm1 = lambda x : a*(np.sqrt(x)+x)/(1-x)
+    b1 = 2*a*((a+a_cut)**2)/(a_cut**2)
+    b2 = ((a+a_cut)**2)/(a_cut**2)
+    f = lambda e : b1*x/((e+a)**3) # x<a_cut
+    F = lambda x : b2*(x*x)/((a+x)**2)
+    b3 = (a_cut**2)/((a+a_cut)**2)
+    Fm1 = lambda x : a*(np.sqrt(b3*x)+b3*x)/(1-b3*x)
     u = rng.uniform(0,1,N)
     return Fm1(u)
 
@@ -61,14 +64,16 @@ if __name__ == "__main__" :
 
     # TEST: kinetic energy distribution
     Ed = 10
-    u_F = kinetic_energy(Ed,N)
+    a_cut=100
+    u_F = kinetic_energy(Ed,N,a_cut=a_cut)
     a = 0.3*Ed
-    f = lambda e : 2*a*e/((e+a)**3)
-    E = np.linspace(0,200,2000)
+    b = 2*a*((a+a_cut)**2)/(a_cut**2)
+    f = lambda e : b*e/((e+a)**3) # x<a_cut
+    E = np.linspace(0,100,1000)
     dE = E[1]-E[0]
     plt.plot(E, f(E)/np.sum(f(E)*dE))
     plt.plot(E, np.zeros(len(E)))
-    plt.hist(u_F[u_F<200],bins=int(np.sqrt(N)),density=True)
+    plt.hist(u_F,bins=int(np.sqrt(N)),density=True)
     plt.show()
 
     # TEST: Al atoms velocity

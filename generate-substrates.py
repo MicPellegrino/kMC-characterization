@@ -54,6 +54,8 @@ ns_ref = 7
 dLz = 10.0
 ffname = 'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy'
 
+### NB! BCC has less atoms per unit cell (and so on...) ###
+
 for an in alloys.keys() :
     print(alloys[an])
     # Generate 100 substrate
