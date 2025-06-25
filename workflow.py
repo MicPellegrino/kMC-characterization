@@ -61,7 +61,7 @@ lmp.command(f"read_data {substrate_file} extra/atom/types 1")
 topology="""
 group substrate type 1
 group adatoms type 2
-variable ffname string "CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy"
+variable ffname string "test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy"
 pair_style eam/alloy 
 pair_coeff * * ${ffname} Mo Mo
 neighbor 2.0 bin
