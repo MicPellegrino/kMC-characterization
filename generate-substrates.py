@@ -55,11 +55,11 @@ ffname = 'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy'
 
 for an in alloys.keys() :
     print(alloys[an])
-    if alloys[an].phase='fcc' :
+    if alloys[an].phase=='fcc' :
         nx_ref = 31
         ny_ref = 31
         ns_ref = 7
-    else alloys[an].phase='bcc' :
+    else alloys[an].phase=='bcc' :
         nx_ref = int(np.round((2**(1/3))*31))
         ny_ref = int(np.round((2**(1/3))*31))
         ns_ref = int(np.round((2**(1/3))*7))
