@@ -48,9 +48,6 @@ alloys['Mo'] = Alloy(1,['Mo'],'bcc',3.15)
 alloys['Ni'] = Alloy(1,['Ni'],'fcc',3.52)
 
 # Simulation box parameters
-nx_ref = 31
-ny_ref = 31
-ns_ref = 7
 dLz = 10.0
 ffname = 'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy'
 
@@ -58,6 +55,14 @@ ffname = 'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy'
 
 for an in alloys.keys() :
     print(alloys[an])
+    if alloys[an].phase='fcc' :
+        nx_ref = 31
+        ny_ref = 31
+        ns_ref = 7
+    else alloys[an].phase='bcc' :
+        nx_ref = int(np.round((2**(1/3))*31))
+        ny_ref = int(np.round((2**(1/3))*31))
+        ns_ref = int(np.round((2**(1/3))*7))
     # Generate 100 substrate
     nx = nx_ref
     ny = ny_ref

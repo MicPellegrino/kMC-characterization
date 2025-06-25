@@ -115,14 +115,21 @@ if __name__ == "__main__" :
     ### TESTING SUBSTRATE GENERATION ###
     lmp = lammps.lammps()
     lmp_header(lmp)
-    lmp_lattice(lmp,a=4.05,nx=31,ny=31,ns=7,phase='fcc',orient='100')
+    nx_ref = int(np.round((2**(1/3))*31))
+    ny_ref = int(np.round((2**(1/3))*31))
+    ns_ref = int(np.round((2**(1/3))*7))
+    lmp_lattice(lmp,a=3.15,nx=nx_ref,ny=ny_ref,ns=ns_ref,phase='bcc',orient='100')
+    # lmp_lattice(lmp,a=4.05,nx=31,ny=31,ns=7,phase='fcc',orient='100')
     # lmp_lattice(lmp,a=4.05,nx=31,ny=int(31/np.sqrt(2)),ns=int(7/np.sqrt(2)),phase='fcc',orient='110')
     # lmp_lattice(lmp,a=4.05,nx=int(31/np.sqrt(2)),ny=int(1.5*31/np.sqrt(6)),ns=int(7/np.sqrt(3)),phase='fcc',orient='111')
     lmp_box(lmp,ntypes=2,dLx=10.0)
-    lmp_potential_eam(lmp,'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy',['Al','Al'],flavour='eam/alloy')
+    # lmp_potential_eam(lmp,'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy',['Al','AL'],flavour='eam/alloy')
+    lmp_potential_eam(lmp,'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy',['Mo','Mo'],flavour='eam/alloy')
     lmp.command("write_data test1.data")
+    """
     lmp_energy_min(lmp)
     lmp.command("write_data test2.data")
     lmp_md_output(lmp,tout=50)
     lmp_relaxation(lmp,nsteps=1000,seed=4928459)
     lmp.command("write_data test3.data")
+    """
