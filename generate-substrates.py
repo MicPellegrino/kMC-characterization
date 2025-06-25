@@ -79,7 +79,8 @@ for an in alloys.keys() :
         ffname,
         ff_flavour='eam/alloy',
         seed=rng.randint(99999),
-        orient='100')
+        orient='100',
+        GPU=False)
     # Generate 110 substrate
     nx = nx_ref
     ny = int(np.round(ny_ref/np.sqrt(2)))
@@ -94,7 +95,8 @@ for an in alloys.keys() :
         ffname,
         ff_flavour='eam/alloy',
         seed=rng.randint(99999),
-        orient='110')
+        orient='110',
+        GPU=False)
     # Generate 111 substrate
     nx = int(np.round(nx_ref/np.sqrt(2)))
     ny = int(np.round(1.5*ny_ref/np.sqrt(6)))
@@ -109,4 +111,5 @@ for an in alloys.keys() :
         ffname,
         ff_flavour='eam/alloy',
         seed=rng.randint(99999),
-        orient='111')
+        orient='111',
+        GPU=False)
