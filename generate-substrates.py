@@ -59,10 +59,12 @@ for an in alloys.keys() :
         nx_ref = 31
         ny_ref = 31
         ns_ref = 7
-    else alloys[an].phase=='bcc' :
+    elif alloys[an].phase=='bcc' :
         nx_ref = int(np.round((2**(1/3))*31))
         ny_ref = int(np.round((2**(1/3))*31))
         ns_ref = int(np.round((2**(1/3))*7))
+    else :
+        print("!! Only FCC and BCC supported at the moment !!")
     # Generate 100 substrate
     nx = nx_ref
     ny = ny_ref
