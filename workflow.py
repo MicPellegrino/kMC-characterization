@@ -101,10 +101,10 @@ lmp.commands_string(md_fixes)
 
 # lmp.command("region inflow sphere 63.0 63.0 55.0 1.0")
 # lmp.command("region inflow block 0 125.55 0 125.55 50 68.85")
-lmp.command("region inflow block 0 125.55 0 125.55 38 42")
+lmp.command("region inflow block 0 125.55 0 125.55 40 50")
 lmp.command("group newatom dynamic adatoms region inflow")
 for n in range(Na) :
-    lmp.command(f"create_atoms 2 single {xr[n]} {yr[n]} 40.0 group adatoms")
+    lmp.command(f"create_atoms 2 single {xr[n]} {yr[n]} 45.0 group adatoms")
     lmp.command("run 0 post no")
     lmp.command(f"velocity newatom set 0.0 0.0 {-vabs[n]}")
     lmp.command("run ${nrun}")
