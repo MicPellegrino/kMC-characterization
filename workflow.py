@@ -39,8 +39,9 @@ zuppi = 50
 T = 300
 
 
-# Arrays containing the initial velocities and positions 
-# for the PVD atoms
+# Arrays containing the initial velocities 
+# and positions of PVD atoms.
+# TODO: generate an array for the atomtype
 if me==0 :
     vx, vy, vz, vabs = velocity_distribution(Ed,m,Na)
     xr, yr = plane_uniform(0,125.55,0,125.55,Na) 
@@ -90,6 +91,8 @@ lmp_wrap.lammps_md(lmp, T)
 # Defining inflow region
 lmp_wrap.lammps_inflow(lmp, xlowi, xuppi, ylowi, yuppi, zlowi, zuppi)
 
+# TODO: case where there is more than 1 atomtype for adatoms
+# The atom type to pass to 'create_atoms' should be selected from a vector
 for n in range(Na) :
     lmp.command(f"create_atoms 2 single {xr[n]} {yr[n]} 45.0 group adatoms")
     lmp.command("run 0 post no")
