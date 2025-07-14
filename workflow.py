@@ -29,6 +29,9 @@ yuppf = 125.55
 zlowf = -40.5
 zuppf = 8.2
 
+T = 300
+
+
 # Arrays containing the initial velocities and positions 
 # for the PVD atoms
 if me==0 :
@@ -70,11 +73,8 @@ lmp.command("write_data collisions_pre.data")
 # Defining LAMMPS output
 lmp_wrap.lammps_dump(lmp)
 
-md_fixes="""
-fix myMD1 substrate nvt temp 300.0 300.0 1.0
-fix myMD2 adatoms nve
-"""
-lmp.commands_string(md_fixes)
+# Molecular Dynamics fixes
+lmp_wrap.lammps_md(lmp, T)
 
 # lmp.command("region inflow sphere 63.0 63.0 55.0 1.0")
 # lmp.command("region inflow block 0 125.55 0 125.55 50 68.85")

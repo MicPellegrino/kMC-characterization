@@ -85,3 +85,13 @@ def lammps_dump(lmp) :
     fix avePe adatoms ave/time ${nevery} ${nrepeat} ${nfreq} v_pea_avg ave one file pe.dat
     """
     lmp.commands_string(output_definitions)
+
+def lammps_md(lmp, T, Tdamp=1.0) :
+
+    """ Defining MD fixes """
+
+    md_fixes=f"""
+    fix myMD1 substrate nvt temp {T} {T} 1.0
+    fix myMD2 adatoms nve
+    """
+    lmp.commands_string(md_fixes)
