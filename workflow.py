@@ -1,5 +1,5 @@
 import lammps
-import lammps_wrapper as lmpw
+import lammps_wrapper as lmp_wrap
 import numpy as np
 from random_distributions import uniform_unit_hemisphere, kinetic_energy, velocity_distribution, plane_uniform
 from mpi4py import MPI
@@ -37,25 +37,7 @@ comm.Bcast(yr, root=0)
 lmp = lammps.lammps()
 # lmp = lammps.lammps(cmdargs=['-pk','gpu','1','-sf','gpu'])
 
-initialization_commands="""
-units metal 
-dimension 3 
-boundary p p p
-atom_style atomic
-atom_modify map array
-"""
-lmp.commands_string(initialization_commands)
-
-# Most of these should be dynamic
-output_variables="""
-variable tout equal 125
-variable ndump equal 25
-variable nevery equal 25
-variable nrepeat equal 10
-variable nfreq equal 250
-variable nrun equal 250
-"""
-lmp.commands_string(output_variables)
+lmp_wrap.lammps_units(lmp)
 
 lmp.command(f"read_data {substrate_file} extra/atom/types 1")
 
