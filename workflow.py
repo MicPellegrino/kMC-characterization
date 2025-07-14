@@ -43,6 +43,17 @@ lmp = lammps.lammps()
 # Defining units and boundary conditions
 lmp_wrap.lammps_units(lmp)
 
+# Most of these should be dynamic
+output_variables="""
+variable tout equal 125
+variable ndump equal 25
+variable nevery equal 25
+variable nrepeat equal 10
+variable nfreq equal 250
+variable nrun equal 250
+"""
+lmp.commands_string(output_variables)
+
 lmp.command(f"read_data {substrate_file} extra/atom/types 1")
 
 topology="""
