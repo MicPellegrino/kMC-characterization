@@ -1,4 +1,5 @@
 import lammps
+import lammps_wrapper as lmpw
 import numpy as np
 from random_distributions import uniform_unit_hemisphere, kinetic_energy, velocity_distribution, plane_uniform
 from mpi4py import MPI
@@ -12,6 +13,8 @@ Na = 5000
 # m = 26.982 # Al
 m = 95.94 # Mo
 # m = 58.693 # Ni
+
+substrate_file = "substrates/Mo_100.data"
 
 if me==0 :
     vx, vy, vz, vabs = velocity_distribution(Ed,m,Na)
@@ -33,8 +36,6 @@ comm.Bcast(yr, root=0)
 ##### LAMMPS run ##### 
 lmp = lammps.lammps()
 # lmp = lammps.lammps(cmdargs=['-pk','gpu','1','-sf','gpu'])
-
-substrate_file = "substrates/Mo_100.data"
 
 initialization_commands="""
 units metal 
