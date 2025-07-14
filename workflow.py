@@ -8,17 +8,19 @@ comm = MPI.COMM_WORLD
 me = comm.Get_rank()
 nprocs = comm.Get_size()
 
+### TODO: all these inputs should be in a separate file (like a Gromacs .mdp) ###
+
 Ed = 10
 Na = 5000
 
 # m = 26.982 # Al
-m = 95.94 # Mo
-# m = 58.693 # Ni
+# m = 95.94 # Mo
+m = 58.693 # Ni
 
-substrate_file = "substrates/Mo_100.data"
+substrate_file = "substrates/Ni_100.data"
 ff_file = "test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy"
-sub_an_list = ['Mo']
-ada_an_list = ['Mo']
+sub_an_list = ['Ni']
+ada_an_list = ['Ni']
 
 xlowf = 0
 xuppf = 125.55
