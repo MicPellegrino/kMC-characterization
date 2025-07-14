@@ -10,12 +10,15 @@ nprocs = comm.Get_size()
 
 Ed = 10
 Na = 5000
+
 # m = 26.982 # Al
 m = 95.94 # Mo
 # m = 58.693 # Ni
 
 substrate_file = "substrates/Mo_100.data"
 
+# Arrays containing the initial velocities and positions 
+# for the PVD atoms
 if me==0 :
     vx, vy, vz, vabs = velocity_distribution(Ed,m,Na)
     xr, yr = plane_uniform(0,125.55,0,125.55,Na) 
@@ -33,10 +36,11 @@ comm.Bcast(vabs, root=0)
 comm.Bcast(xr, root=0)
 comm.Bcast(yr, root=0)
 
-##### LAMMPS run ##### 
+# TODO: 'cmdargs' should be passed as input when calling the script from the cmd line
 lmp = lammps.lammps()
 # lmp = lammps.lammps(cmdargs=['-pk','gpu','1','-sf','gpu'])
 
+# Defining units and boundary conditions
 lmp_wrap.lammps_units(lmp)
 
 lmp.command(f"read_data {substrate_file} extra/atom/types 1")
