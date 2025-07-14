@@ -16,6 +16,9 @@ m = 95.94 # Mo
 # m = 58.693 # Ni
 
 substrate_file = "substrates/Mo_100.data"
+ff_file = "test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy"
+sub_an_list = ['Mo']
+ada_an_list = ['Mo']
 
 # Arrays containing the initial velocities and positions 
 # for the PVD atoms
@@ -43,20 +46,11 @@ lmp = lammps.lammps()
 # Defining units and boundary conditions
 lmp_wrap.lammps_units(lmp)
 
+# Defining output frequency
 lmp_wrap.lammps_nstout(lmp)
 
-lmp.command(f"read_data {substrate_file} extra/atom/types 1")
-
-topology="""
-group substrate type 1
-group adatoms type 2
-variable ffname string "test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy"
-pair_style eam/alloy 
-pair_coeff * * ${ffname} Mo Mo
-neighbor 2.0 bin
-neigh_modify delay 0 every 1 check yes
-"""
-lmp.commands_string(topology)
+# Initial substrate configuration and system topology
+lmp_wrap.lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list)
 
 # Freeze some of the lower layers of the substrate to prevent downward motion
 freeze="""
