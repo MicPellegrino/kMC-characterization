@@ -29,6 +29,13 @@ yuppf = 125.55
 zlowf = -40.5
 zuppf = 8.2
 
+xlowi = 0
+xuppi = 125.55
+ylowi = 0
+yuppi = 125.55
+zlowi = 40
+zuppi = 50
+
 T = 300
 
 
@@ -76,10 +83,13 @@ lmp_wrap.lammps_dump(lmp)
 # Molecular Dynamics fixes
 lmp_wrap.lammps_md(lmp, T)
 
+# Previous attempts
 # lmp.command("region inflow sphere 63.0 63.0 55.0 1.0")
 # lmp.command("region inflow block 0 125.55 0 125.55 50 68.85")
-lmp.command("region inflow block 0 125.55 0 125.55 40 50")
-lmp.command("group newatom dynamic adatoms region inflow")
+
+# Defining inflow region
+lmp_wrap.lammps_inflow(lmp, xlowi, xuppi, ylowi, yuppi, zlowi, zuppi)
+
 for n in range(Na) :
     lmp.command(f"create_atoms 2 single {xr[n]} {yr[n]} 45.0 group adatoms")
     lmp.command("run 0 post no")

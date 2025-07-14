@@ -95,3 +95,13 @@ def lammps_md(lmp, T, Tdamp=1.0) :
     fix myMD2 adatoms nve
     """
     lmp.commands_string(md_fixes)
+
+def lammps_inflow(lmp, xlow, xupp, ylow, yupp, zlow, zupp) :
+
+    """ Define region where to generate incoming atoms """
+
+    inflow=f"""
+    region inflow block {xlow} {xupp} {ylow} {yupp} {zlow} {zupp}
+    group newatom dynamic adatoms region inflow
+    """
+    lmp.commands_string(inflow)
