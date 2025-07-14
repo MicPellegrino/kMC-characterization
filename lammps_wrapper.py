@@ -59,6 +59,8 @@ def lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list,
 
 def lammps_freeze(lmp, xlow, xupp, ylow, yupp, zlow, zupp) :
 
+    """ Define the portion of the substrate that will be frozen """
+
     freeze=f"""
     region lowsub block {xlow} {xupp} {ylow} {yupp} {zlow} {zupp}
     group frozen region lowsub
@@ -66,3 +68,20 @@ def lammps_freeze(lmp, xlow, xupp, ylow, yupp, zlow, zupp) :
     fix myFreeze frozen setforce 0.0 0.0 0.0
     """
     lmp.commands_string(freeze)
+
+# TODO: output file names should be given as input
+# Also, remove the LAMMPS variables for output frequencies, 
+# it's cleaner to keep all variables in Python
+def lammps_dump(lmp) :
+
+    # Dumping impacting atoms in .dump files and substarte in .dcd file
+    output_definitions="""
+    variable pea_avg equal "pe/atoms"
+    thermo ${tout}
+    thermo_style custom step v_pea_avg pe temp lx ly lz press
+    variable dummyMol atom "gmask(substrate)+2.0*gmask(adatoms)+3.0*gmask(frozen)"
+    dump myDcd substrate dcd ${ndump} substrate.dcd
+    dump myDump adatoms custom ${ndump} collisions.dump id type x y z xu yu zu vx vy vz v_dummyMol
+    fix avePe adatoms ave/time ${nevery} ${nrepeat} ${nfreq} v_pea_avg ave one file pe.dat
+    """
+    lmp.commands_string(output_definitions)

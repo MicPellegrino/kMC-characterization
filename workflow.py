@@ -67,17 +67,8 @@ lmp_wrap.lammps_freeze(lmp, xlowf, xuppf, ylowf, yuppf, zlowf, zuppf)
 # Saving pre
 lmp.command("write_data collisions_pre.data")
 
-# Dumping impacting atoms in .dump files and substarte in .dcd file
-output_definitions="""
-variable pea_avg equal "pe/atoms"
-thermo ${tout}
-thermo_style custom step v_pea_avg pe temp lx ly lz press
-variable dummyMol atom "gmask(substrate)+2.0*gmask(adatoms)+3.0*gmask(frozen)"
-dump myDcd substrate dcd ${ndump} substrate.dcd
-dump myDump adatoms custom ${ndump} collisions.dump id type x y z xu yu zu vx vy vz v_dummyMol
-fix avePe adatoms ave/time ${nevery} ${nrepeat} ${nfreq} v_pea_avg ave one file pe.dat
-"""
-lmp.commands_string(output_definitions)
+# Defining LAMMPS output
+lmp_wrap.lammps_dump(lmp)
 
 md_fixes="""
 fix myMD1 substrate nvt temp 300.0 300.0 1.0
