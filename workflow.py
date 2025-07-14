@@ -20,6 +20,13 @@ ff_file = "test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy"
 sub_an_list = ['Mo']
 ada_an_list = ['Mo']
 
+xlowf = 0
+xuppf = 125.55
+ylowf = 0
+yuppf = 125.55
+zlowf = -40.5
+zuppf = 8.2
+
 # Arrays containing the initial velocities and positions 
 # for the PVD atoms
 if me==0 :
@@ -52,14 +59,8 @@ lmp_wrap.lammps_nstout(lmp)
 # Initial substrate configuration and system topology
 lmp_wrap.lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list)
 
-# Freeze some of the lower layers of the substrate to prevent downward motion
-freeze="""
-region lowsub block 0 125.55 0 125.55 -40.5 8.2
-group frozen region lowsub
-velocity frozen set 0.0 0.0 0.0
-fix myFreeze frozen setforce 0.0 0.0 0.0
-"""
-lmp.commands_string(freeze)
+# Freezing some of the lower layers of the substrate to prevent downward motion
+lmp_wrap.lammps_freeze(lmp, xlowf, xuppf, ylowf, yuppf, zlowf, zuppf)
 
 # Saving pre
 lmp.command("write_data collisions_pre.data")

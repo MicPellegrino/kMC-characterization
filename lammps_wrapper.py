@@ -15,7 +15,8 @@ def lammps_units(lmp) :
 
 def lammps_nstout(lmp, tout=125, ndump=25, nevery=25, nrepeat=10, nfreq=250, nrun=250) :
 
-    # Most of these should be dynamic
+    """ Define variables for output frequencies """
+    
     output_variables=f"""
     variable tout equal {tout}
     variable ndump equal {ndump}
@@ -55,3 +56,13 @@ def lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list,
     neigh_modify delay 0 every 1 check yes
     """
     lmp.commands_string(topology)
+
+def lammps_freeze(lmp, xlow, xupp, ylow, yupp, zlow, zupp) :
+
+    freeze=f"""
+    region lowsub block {xlow} {xupp} {ylow} {yupp} {zlow} {zupp}
+    group frozen region lowsub
+    velocity frozen set 0.0 0.0 0.0
+    fix myFreeze frozen setforce 0.0 0.0 0.0
+    """
+    lmp.commands_string(freeze)
