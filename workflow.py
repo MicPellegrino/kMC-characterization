@@ -41,20 +41,19 @@ T = 300
 ### ------------------------------------------------------------------------- ###
 
 # Arrays containing the initial velocities and positions of PVD atoms.
-# TODO: generate an array for the atomtype
 if me==0 :
     vx, vy, vz, vabs = velocity_distribution(Ed,m,Na)
     xr, yr = plane_uniform(0,125.55,0,125.55,Na)
     type_list = np.arange(na_sub+1,na_sub+na_ada+1)
     atype_vec = gen_atype_vector(type_list,frac_list,Na)
 else :
-    vx = np.empty(Na)
-    vy = np.empty(Na)
-    vz = np.empty(Na)
-    vabs = np.empty(Na)
-    xr = np.empty(Na)
-    yr = np.empty(Na)
-    atype_vec = np.empty(Na)
+    vx = np.empty(Na,dtype=np.float64)
+    vy = np.empty(Na,dtype=np.float64)
+    vz = np.empty(Na,dtype=np.float64)
+    vabs = np.empty(Na,dtype=np.float64)
+    xr = np.empty(Na,dtype=np.float64)
+    yr = np.empty(Na,dtype=np.float64)
+    atype_vec = np.empty(Na,dtype=int)
 comm.Bcast(vx, root=0)
 comm.Bcast(vy, root=0)
 comm.Bcast(vz, root=0)
@@ -96,13 +95,8 @@ lmp_wrap.lammps_md(lmp, T)
 # Defining inflow region
 lmp_wrap.lammps_inflow(lmp, xlowi, xuppi, ylowi, yuppi, zlowi, zuppi)
 
-# TODO: case where there is more than 1 atomtype for adatoms
-# The atom type to pass to 'create_atoms' should be selected from a vector
-for n in range(Na) :
-    lmp.command(f"create_atoms 2 single {xr[n]} {yr[n]} 45.0 group adatoms")
-    lmp.command("run 0 post no")
-    lmp.command(f"velocity newatom set 0.0 0.0 {-vabs[n]}")
-    lmp.command("run ${nrun}")
+# Simulation of the actual coating process
+lmp_wrap.lammps_coat(lmp, Na, atype_vec, xr, yr, vabs, zgen=45)
 
 # Saving after
 lmp.command("write_data collisions_post.data")

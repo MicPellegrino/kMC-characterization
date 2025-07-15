@@ -106,3 +106,12 @@ def lammps_inflow(lmp, xlow, xupp, ylow, yupp, zlow, zupp) :
     group newatom dynamic adatoms region inflow
     """
     lmp.commands_string(inflow)
+
+def lammps_coat(lmp, Na, atype_vec, xr, yr, vabs, zgen, 
+    nrun=250) :
+    
+    for n in range(Na) :
+        lmp.command(f"create_atoms {atype_vec[n]} single {xr[n]} {yr[n]} {zgen} group adatoms")
+        lmp.command("run 0 post no")
+        lmp.command(f"velocity newatom set 0.0 0.0 {-vabs[n]}")
+        lmp.command(f"run {nrun}")
