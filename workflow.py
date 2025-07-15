@@ -1,113 +1,102 @@
 import lammps
+import lammps_wrapper as lmp_wrap
 import numpy as np
-from random_distributions import uniform_unit_hemisphere, kinetic_energy, velocity_distribution, plane_uniform
+from random_distributions import *
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
 me = comm.Get_rank()
 nprocs = comm.Get_size()
 
+### TODO: all these inputs should be in a separate file (like a Gromacs .mdp) ###
+
 Ed = 10
 Na = 5000
-# m = 26.982 # Al
-m = 95.94 # Mo
-# m = 58.693 # Ni
 
+# m = 26.982 # Al
+# m = 95.94 # Mo
+m = 58.693 # Ni
+
+na_sub = 1
+na_ada = 1
+frac_list = [1.0]
+substrate_file = "substrates/Ni_100.data"
+ff_file = "test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy"
+sub_an_list = ['Ni']
+ada_an_list = ['Ni']
+xlowf = 0
+xuppf = 125.55
+ylowf = 0
+yuppf = 125.55
+zlowf = -40.5
+zuppf = 8.2
+xlowi = 0
+xuppi = 125.55
+ylowi = 0
+yuppi = 125.55
+zlowi = 40
+zuppi = 50
+T = 300
+
+### ------------------------------------------------------------------------- ###
+
+# Arrays containing the initial velocities and positions of PVD atoms.
 if me==0 :
     vx, vy, vz, vabs = velocity_distribution(Ed,m,Na)
-    xr, yr = plane_uniform(0,125.55,0,125.55,Na) 
+    xr, yr = plane_uniform(0,125.55,0,125.55,Na)
+    type_list = np.arange(na_sub+1,na_sub+na_ada+1)
+    atype_vec = gen_atype_vector(type_list,frac_list,Na)
 else :
-    vx = np.empty(Na)
-    vy = np.empty(Na)
-    vz = np.empty(Na)
-    vabs = np.empty(Na)
-    xr = np.empty(Na)
-    yr = np.empty(Na)
+    vx = np.empty(Na,dtype=np.float64)
+    vy = np.empty(Na,dtype=np.float64)
+    vz = np.empty(Na,dtype=np.float64)
+    vabs = np.empty(Na,dtype=np.float64)
+    xr = np.empty(Na,dtype=np.float64)
+    yr = np.empty(Na,dtype=np.float64)
+    atype_vec = np.empty(Na,dtype=int)
 comm.Bcast(vx, root=0)
 comm.Bcast(vy, root=0)
 comm.Bcast(vz, root=0)
 comm.Bcast(vabs, root=0)
 comm.Bcast(xr, root=0)
 comm.Bcast(yr, root=0)
+comm.Bcast(atype_vec, root=0)
 
-##### LAMMPS run ##### 
+# TODO: 'cmdargs' should be passed as input when calling the script from the cmd line
 lmp = lammps.lammps()
 # lmp = lammps.lammps(cmdargs=['-pk','gpu','1','-sf','gpu'])
 
-substrate_file = "substrates/Mo_100.data"
+# Defining units and boundary conditions
+lmp_wrap.lammps_units(lmp)
 
-initialization_commands="""
-units metal 
-dimension 3 
-boundary p p p
-atom_style atomic
-atom_modify map array
-"""
-lmp.commands_string(initialization_commands)
+# Defining output frequency
+lmp_wrap.lammps_nstout(lmp)
 
-# Most of these should be dynamic
-output_variables="""
-variable tout equal 125
-variable ndump equal 25
-variable nevery equal 25
-variable nrepeat equal 10
-variable nfreq equal 250
-variable nrun equal 250
-"""
-lmp.commands_string(output_variables)
+# Initial substrate configuration and system topology
+lmp_wrap.lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list, 
+    na_sub=na_sub, na_ada=na_ada)
 
-lmp.command(f"read_data {substrate_file} extra/atom/types 1")
-
-topology="""
-group substrate type 1
-group adatoms type 2
-variable ffname string "test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy"
-pair_style eam/alloy 
-pair_coeff * * ${ffname} Mo Mo
-neighbor 2.0 bin
-neigh_modify delay 0 every 1 check yes
-"""
-lmp.commands_string(topology)
-
-# Freeze some of the lower layers of the substrate to prevent downward motion
-freeze="""
-region lowsub block 0 125.55 0 125.55 -40.5 8.2
-group frozen region lowsub
-velocity frozen set 0.0 0.0 0.0
-fix myFreeze frozen setforce 0.0 0.0 0.0
-"""
-lmp.commands_string(freeze)
+# Freezing some of the lower layers of the substrate to prevent downward motion
+lmp_wrap.lammps_freeze(lmp, xlowf, xuppf, ylowf, yuppf, zlowf, zuppf)
 
 # Saving pre
 lmp.command("write_data collisions_pre.data")
 
-# Dumping impacting atoms in .dump files and substarte in .dcd file
-output_definitions="""
-variable pea_avg equal "pe/atoms"
-thermo ${tout}
-thermo_style custom step v_pea_avg pe temp lx ly lz press
-variable dummyMol atom "gmask(substrate)+2.0*gmask(adatoms)+3.0*gmask(frozen)"
-dump myDcd substrate dcd ${ndump} substrate.dcd
-dump myDump adatoms custom ${ndump} collisions.dump id type x y z xu yu zu vx vy vz v_dummyMol
-fix avePe adatoms ave/time ${nevery} ${nrepeat} ${nfreq} v_pea_avg ave one file pe.dat
-"""
-lmp.commands_string(output_definitions)
+# Defining LAMMPS output
+lmp_wrap.lammps_dump(lmp)
 
-md_fixes="""
-fix myMD1 substrate nvt temp 300.0 300.0 1.0
-fix myMD2 adatoms nve
-"""
-lmp.commands_string(md_fixes)
+# Molecular Dynamics fixes
+lmp_wrap.lammps_md(lmp, T)
 
+# Previous attempts
 # lmp.command("region inflow sphere 63.0 63.0 55.0 1.0")
 # lmp.command("region inflow block 0 125.55 0 125.55 50 68.85")
-lmp.command("region inflow block 0 125.55 0 125.55 40 50")
-lmp.command("group newatom dynamic adatoms region inflow")
-for n in range(Na) :
-    lmp.command(f"create_atoms 2 single {xr[n]} {yr[n]} 45.0 group adatoms")
-    lmp.command("run 0 post no")
-    lmp.command(f"velocity newatom set 0.0 0.0 {-vabs[n]}")
-    lmp.command("run ${nrun}")
+
+# Defining inflow region
+lmp_wrap.lammps_inflow(lmp, xlowi, xuppi, ylowi, yuppi, zlowi, zuppi)
+
+# Simulation of the actual coating process
+lmp_wrap.lammps_coat(lmp, Na, atype_vec, xr, yr, vabs, zgen=45)
 
 # Saving after
 lmp.command("write_data collisions_post.data")
