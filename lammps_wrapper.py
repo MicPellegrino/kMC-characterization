@@ -13,7 +13,8 @@ def lammps_units(lmp) :
     """
     lmp.commands_string(initialization_commands)
 
-def lammps_nstout(lmp, tout=125, ndump=25, nevery=25, nrepeat=10, nfreq=250, nrun=250) :
+def lammps_nstout(lmp, 
+    tout=125, ndump=25, nevery=25, nrepeat=10, nfreq=250, nrun=250) :
 
     """ Define variables for output frequencies """
     
@@ -69,20 +70,20 @@ def lammps_freeze(lmp, xlow, xupp, ylow, yupp, zlow, zupp) :
     """
     lmp.commands_string(freeze)
 
-# TODO: output file names should be given as input
-# Also, remove the LAMMPS variables for output frequencies, 
-# it's cleaner to keep all variables in Python
-def lammps_dump(lmp) :
+def lammps_dump(lmp, 
+    sub_traj='substrate.dcd', coll_traj='collisions.dump', tout=125, ndump=25, nevery=25, nrepeat=10, nfreq=250) :
+
+    """ Defining the output observables and trajectories """
 
     # Dumping impacting atoms in .dump files and substarte in .dcd file
-    output_definitions="""
+    output_definitions=f"""
     variable pea_avg equal "pe/atoms"
-    thermo ${tout}
+    thermo {tout}
     thermo_style custom step v_pea_avg pe temp lx ly lz press
     variable dummyMol atom "gmask(substrate)+2.0*gmask(adatoms)+3.0*gmask(frozen)"
-    dump myDcd substrate dcd ${ndump} substrate.dcd
-    dump myDump adatoms custom ${ndump} collisions.dump id type x y z xu yu zu vx vy vz v_dummyMol
-    fix avePe adatoms ave/time ${nevery} ${nrepeat} ${nfreq} v_pea_avg ave one file pe.dat
+    dump myDcd substrate dcd {ndump} {sub_traj}
+    dump myDump adatoms custom {ndump} {coll_traj} id type x y z xu yu zu vx vy vz v_dummyMol
+    fix avePe adatoms ave/time {nevery} {nrepeat} {nfreq} v_pea_avg ave one file pe.dat
     """
     lmp.commands_string(output_definitions)
 
