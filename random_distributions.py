@@ -112,12 +112,12 @@ if __name__ == "__main__" :
 
     # TEST: generating vectors of atomtypes
     N = 1000
-    # type_list=[3,4,5]
-    # frac_list=[0.333,0.333,0.334]
-    type_list=[2]
-    frac_list=[1.0]
+    type_list=[3,4,5]
+    frac_list=[0.333,0.333,0.334]
+    # type_list=[2]
+    # frac_list=[1.0]
     v = gen_atype_vector(type_list,frac_list,N)
-    # print(np.sum(v==3))
-    # print(np.sum(v==4))
-    # print(np.sum(v==5))
-    print(np.sum(v==2))
+    print(np.sum(v==3))
+    print(np.sum(v==4))
+    print(np.sum(v==5))
+    # print(np.sum(v==2))
