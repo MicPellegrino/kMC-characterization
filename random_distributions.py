@@ -49,6 +49,23 @@ def plane_uniform(xlow,xupp,ylow,yupp,N) :
     y = (yupp-ylow)*rng.uniform(0,1,N)+ylow
     return x, y
 
+###########################################
+
+def gen_atype_vector(type_list,frac_list,N) :
+    nf_list = []
+    for f in frac_list :
+        nf_list.append(int(np.round(N*f)))
+    indices = np.arange(N)
+    atype_vec = type_list[0]*np.ones(N,dtype=int)
+    for i in range(len(nf_list)) :
+        idx = np.arange(len(indices))
+        c = rng.choice(idx,nf_list[i],replace=False)
+        atype_vec[indices[c]] = type_list[i]
+        indices = np.delete(indices,c)
+    return atype_vec
+
+###########################################
+
 if __name__ == "__main__" :
 
     import matplotlib.pyplot as plt
@@ -92,3 +109,15 @@ if __name__ == "__main__" :
     ax.set_ylim([-max_vel,max_vel])
     ax.set_zlim([np.min(vz),0])
     plt.show()
+
+    # TEST: generating vectors of atomtypes
+    N = 1000
+    # type_list=[3,4,5]
+    # frac_list=[0.333,0.333,0.334]
+    type_list=[2]
+    frac_list=[1.0]
+    v = gen_atype_vector(type_list,frac_list,N)
+    # print(np.sum(v==3))
+    # print(np.sum(v==4))
+    # print(np.sum(v==5))
+    print(np.sum(v==2))
