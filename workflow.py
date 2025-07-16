@@ -3,6 +3,7 @@ import lammps_wrapper as lmp_wrap
 import numpy as np
 from random_distributions import *
 from mpi4py import MPI
+import sys
 
 comm = MPI.COMM_WORLD
 me = comm.Get_rank()
@@ -62,9 +63,9 @@ comm.Bcast(xr, root=0)
 comm.Bcast(yr, root=0)
 comm.Bcast(atype_vec, root=0)
 
-# TODO: 'cmdargs' should be passed as input when calling the script from the cmd line
-lmp = lammps.lammps()
-# lmp = lammps.lammps(cmdargs=['-pk','gpu','1','-sf','gpu'])
+# LAMMPS 'cmdargs' is passed as input when calling the script from the cmd line
+lmp_cmdargs = ' '.join(sys.argv[1:])
+lmp = lammps.lammps(cmdargs=lmp_cmdargs.split())
 
 # Defining units and boundary conditions
 lmp_wrap.lammps_units(lmp)
