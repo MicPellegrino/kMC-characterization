@@ -2,43 +2,39 @@ import lammps
 import lammps_wrapper as lmp_wrap
 import numpy as np
 from random_distributions import *
+from parser import load_input_file
 from mpi4py import MPI
+import sys
 
 comm = MPI.COMM_WORLD
 me = comm.Get_rank()
 nprocs = comm.Get_size()
 
-### TODO: all these inputs should be in a separate file (like a Gromacs .mdp) ###
-
-Ed = 10
-Na = 5000
-
-# m = 26.982 # Al
-# m = 95.94 # Mo
-m = 58.693 # Ni
-
-na_sub = 1
-na_ada = 1
-frac_list = [1.0]
-substrate_file = "substrates/Ni_100.data"
-ff_file = "test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy"
-sub_an_list = ['Ni']
-ada_an_list = ['Ni']
-xlowf = 0
-xuppf = 125.55
-ylowf = 0
-yuppf = 125.55
-zlowf = -40.5
-zuppf = 8.2
-xlowi = 0
-xuppi = 125.55
-ylowi = 0
-yuppi = 125.55
-zlowi = 40
-zuppi = 50
-T = 300
-
-### ------------------------------------------------------------------------- ###
+### TODO: I/O should only be from rank 0 ###
+params = load_input_file("input.txt")
+Ed = params["Ed"]
+Na = params["Na"]
+m = params["m"]
+na_sub = params["na_sub"]
+na_ada = params["na_ada"]
+frac_list = params["frac_list"]
+substrate_file = params["substrate_file"]
+ff_file = params["ff_file"]
+sub_an_list = params["sub_an_list"]
+ada_an_list = params["ada_an_list"]
+xlowf = params["xlowf"]
+xuppf = params["xuppf"]
+ylowf = params["ylowf"]
+yuppf = params["yuppf"]
+zlowf = params["zlowf"]
+zuppf = params["zuppf"]
+xlowi = params["xlowi"]
+xuppi = params["xuppi"]
+ylowi = params["ylowi"]
+yuppi = params["yuppi"]
+zlowi = params["zlowi"]
+zuppi = params["zuppi"]
+T = params["T"]
 
 # Arrays containing the initial velocities and positions of PVD atoms.
 if me==0 :
@@ -62,9 +58,9 @@ comm.Bcast(xr, root=0)
 comm.Bcast(yr, root=0)
 comm.Bcast(atype_vec, root=0)
 
-# TODO: 'cmdargs' should be passed as input when calling the script from the cmd line
-lmp = lammps.lammps()
-# lmp = lammps.lammps(cmdargs=['-pk','gpu','1','-sf','gpu'])
+# LAMMPS 'cmdargs' is passed as input when calling the script from the cmd line
+lmp_cmdargs = ' '.join(sys.argv[1:])
+lmp = lammps.lammps(cmdargs=lmp_cmdargs.split())
 
 # Defining units and boundary conditions
 lmp_wrap.lammps_units(lmp)
