@@ -10,10 +10,12 @@ comm = MPI.COMM_WORLD
 me = comm.Get_rank()
 nprocs = comm.Get_size()
 
-### TODO: I/O should only be from rank 0 ###
+# TODO: I/O should only be from rank 0
 params = load_input_file("input.txt")
 Ed = params["Ed"]
 Na = params["Na"]
+# TODO: 'm' should be a vector of length na_ada
+# (Long-term plan: 'm' should be read from the ff file)
 m = params["m"]
 na_sub = params["na_sub"]
 na_ada = params["na_ada"]
@@ -38,18 +40,21 @@ T = params["T"]
 
 # Arrays containing the initial velocities and positions of PVD atoms.
 if me==0 :
-    vx, vy, vz, vabs = velocity_distribution(Ed,m,Na)
-    xr, yr = plane_uniform(0,125.55,0,125.55,Na)
     type_list = np.arange(na_sub+1,na_sub+na_ada+1)
     atype_vec = gen_atype_vector(type_list,frac_list,Na)
+    # TODO: 'velocity_distribution' should take 'atype_vec' as input and
+    # generate velocities depending on the atomtype and mass of that atomtype
+    # (with 'm' now being a vector)
+    vx, vy, vz, vabs = velocity_distribution(Ed,m,Na)
+    xr, yr = plane_uniform(0,125.55,0,125.55,Na)
 else :
+    atype_vec = np.empty(Na,dtype=int)
     vx = np.empty(Na,dtype=np.float64)
     vy = np.empty(Na,dtype=np.float64)
     vz = np.empty(Na,dtype=np.float64)
     vabs = np.empty(Na,dtype=np.float64)
     xr = np.empty(Na,dtype=np.float64)
     yr = np.empty(Na,dtype=np.float64)
-    atype_vec = np.empty(Na,dtype=int)
 comm.Bcast(vx, root=0)
 comm.Bcast(vy, root=0)
 comm.Bcast(vz, root=0)
@@ -83,10 +88,6 @@ lmp_wrap.lammps_dump(lmp)
 
 # Molecular Dynamics fixes
 lmp_wrap.lammps_md(lmp, T)
-
-# Previous attempts
-# lmp.command("region inflow sphere 63.0 63.0 55.0 1.0")
-# lmp.command("region inflow block 0 125.55 0 125.55 50 68.85")
 
 # Defining inflow region
 lmp_wrap.lammps_inflow(lmp, xlowi, xuppi, ylowi, yuppi, zlowi, zuppi)

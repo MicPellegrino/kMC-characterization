@@ -33,6 +33,7 @@ def kinetic_energy(Ed,N,a_cut=100) :
 
 ###########################################
 
+# TODO: generalize to multiple atomtypes
 def velocity_distribution(Ed,m,N) :
     ek = kinetic_energy(Ed,N)
     prefac = (1e2)*CFSR*np.sqrt(2*ek/m)
