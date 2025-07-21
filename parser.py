@@ -13,6 +13,7 @@ def load_input_file(filename):
             key, value = map(str.strip, line.split('=', 1))
             
             # Handle special variables
+            # TODO: now 'm' is also a "special variable"
             if key == "frac_list":
                 variables[key] = [float(v) for v in value.split()]
             elif key in ("sub_an_list", "ada_an_list"):
