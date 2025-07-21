@@ -33,7 +33,6 @@ def kinetic_energy(Ed,N,a_cut=100) :
 
 ###########################################
 
-# TODO: generalize to multiple atomtypes
 def velocity_distribution(Ed,m,N) :
     ek = kinetic_energy(Ed,N)
     prefac = (1e2)*CFSR*np.sqrt(2*ek/m)
@@ -67,11 +66,35 @@ def gen_atype_vector(type_list,frac_list,N) :
 
 ###########################################
 
-if __name__ == "__main__" :
+def velocity_per_type(Ed,m_vec,N,type_list,atype_vec) :
+    
+    vx = np.zeros(N)
+    vy = np.zeros(N)
+    vz = np.zeros(N)
+    prefac = np.zeros(N)
 
+    for i in range(len(type_list)) :
+        
+        Ni = np.sum(atype_vec==type_list[i])
+        idx = np.argwhere(atype_vec==type_list[i])
+        idx = idx.ravel()   # Sometimes numpy is really stupid...
+        ek = kinetic_energy(Ed,Ni)
+        prefac_i = (1e2)*CFSR*np.sqrt(2*ek/m_vec[i])
+        xs, ys, zs = uniform_unit_hemisphere(Ni)
+
+        vx[idx] = prefac_i*xs
+        vy[idx] = prefac_i*ys
+        vz[idx] = prefac_i*zs
+        prefac[idx] = prefac_i
+
+    return vx, vy, vz, prefac
+
+###########################################
+
+### TESTS ###
+
+def test_uniform_hemisphere() :
     import matplotlib.pyplot as plt
-
-    # TEST: uniform hemisphere
     N = 1000
     xs, ys, zs = uniform_unit_hemisphere(N)
     fig = plt.figure()
@@ -80,7 +103,9 @@ if __name__ == "__main__" :
     ax.scatter(xs, ys, zs, 'ro')
     plt.show()
 
-    # TEST: kinetic energy distribution
+def test_kinetic_energy_distribution() :
+    import matplotlib.pyplot as plt
+    N = 1000
     Ed = 10
     a_cut=100
     u_F = kinetic_energy(Ed,N,a_cut=a_cut)
@@ -94,7 +119,10 @@ if __name__ == "__main__" :
     plt.hist(u_F,bins=int(np.sqrt(N)),density=True)
     plt.show()
 
-    # TEST: Al atoms velocity
+def test_al_atom_velocity() :
+    import matplotlib.pyplot as plt
+    Ed = 10
+    N = 1000
     m_Al = 26.982 # [amu]
     vx, vy, vz, _ = velocity_distribution(Ed,m_Al,N)
     soa = np.vstack((vx,vy,vz))
@@ -111,14 +139,56 @@ if __name__ == "__main__" :
     ax.set_zlim([np.min(vz),0])
     plt.show()
 
-    # TEST: generating vectors of atomtypes
+def test_generate_atomtypes_multiple() :
     N = 1000
     type_list=[3,4,5]
     frac_list=[0.333,0.333,0.334]
-    # type_list=[2]
-    # frac_list=[1.0]
     v = gen_atype_vector(type_list,frac_list,N)
     print(np.sum(v==3))
     print(np.sum(v==4))
     print(np.sum(v==5))
-    # print(np.sum(v==2))
+
+def test_generate_atomtypes_single() :
+    N = 1000
+    type_list=[2]
+    frac_list=[1.0]
+    v = gen_atype_vector(type_list,frac_list,N)
+    print(np.sum(v==2))
+
+def test_velocity_per_type() :
+    import matplotlib.pyplot as plt
+    Ed = 10
+    N = 300000
+    type_list=[3,4,5]
+    frac_list=[0.333,0.333,0.334]
+    m_vec = [26.982,95.94,58.693]   # Al, Mo, Ti
+    atype_vec = gen_atype_vector(type_list,frac_list,N)
+    idx_3 = np.argwhere(atype_vec==3)
+    idx_3 = idx_3.ravel()
+    idx_4 = np.argwhere(atype_vec==4)
+    idx_4 = idx_4.ravel()
+    idx_5 = np.argwhere(atype_vec==5)
+    idx_5 = idx_5.ravel()
+    vx, vy, vz, vabs = velocity_per_type(Ed,m_vec,N,type_list,atype_vec)
+    plt.hist(vabs[idx_3],bins=int(np.sqrt(N//3)),density=True,label='Al',alpha=0.75)
+    plt.hist(vabs[idx_4],bins=int(np.sqrt(N//3)),density=True,label='Mo',alpha=0.75)
+    plt.hist(vabs[idx_5],bins=int(np.sqrt(N//3)),density=True,label='Ni',alpha=0.75)
+    plt.legend()
+    plt.show()
+    ekin_3 = 0.5*m_vec[0]*vabs[idx_3]*vabs[idx_3]
+    ekin_4 = 0.5*m_vec[1]*vabs[idx_4]*vabs[idx_4]
+    ekin_5 = 0.5*m_vec[2]*vabs[idx_5]*vabs[idx_5]
+    plt.hist(ekin_3,bins=int(np.sqrt(N//3)),density=True,label='Al',alpha=0.75)
+    plt.hist(ekin_4,bins=int(np.sqrt(N//3)),density=True,label='Mo',alpha=0.75)
+    plt.hist(ekin_5,bins=int(np.sqrt(N//3)),density=True,label='Ni',alpha=0.75)
+    plt.legend()
+    plt.show()
+
+if __name__ == "__main__" :
+
+    test_uniform_hemisphere()
+    test_kinetic_energy_distribution()
+    test_al_atom_velocity()
+    test_generate_atomtypes_multiple()
+    test_generate_atomtypes_single()
+    test_velocity_per_type()
