@@ -14,7 +14,7 @@ def load_input_file(filename):
             
             # Handle special variables
             # TODO: now 'm' is also a "special variable"
-            if key == "frac_list":
+            if key in ("frac_list", "m"):
                 variables[key] = [float(v) for v in value.split()]
             elif key in ("sub_an_list", "ada_an_list"):
                 variables[key] = value.split()
@@ -30,6 +30,7 @@ def load_input_file(filename):
 
     # Check on the length of input strings
     assert len(variables['frac_list'])==variables['na_ada'], "Adatom fractions not matching number of adatom types"
+    assert len(variables['m'])==variables['na_ada'], "Adatom mass vector not matching number of adatom types"
     assert len(variables['ada_an_list'])==variables['na_ada'], "Adatom type list not matching number of adatom types"
     assert len(variables['sub_an_list'])==variables['na_sub'], "Substrate type list not matching number of substrate types"
 

@@ -105,7 +105,7 @@ def test_uniform_hemisphere() :
 
 def test_kinetic_energy_distribution() :
     import matplotlib.pyplot as plt
-    N = 1000
+    N = 50000
     Ed = 10
     a_cut=100
     u_F = kinetic_energy(Ed,N,a_cut=a_cut)
@@ -114,9 +114,12 @@ def test_kinetic_energy_distribution() :
     f = lambda e : b*e/((e+a)**3) # x<a_cut
     E = np.linspace(0,100,1000)
     dE = E[1]-E[0]
-    plt.plot(E, f(E)/np.sum(f(E)*dE))
-    plt.plot(E, np.zeros(len(E)))
-    plt.hist(u_F,bins=int(np.sqrt(N)),density=True)
+    plt.plot(E, f(E)/np.sum(f(E)*dE),'k-',linewidth=3)
+    plt.hist(u_F,bins=int(np.sqrt(N)),density=True,alpha=0.85)
+    plt.xlabel(r'$\varepsilon$ [eV]',fontsize=25)
+    plt.ylabel(r'$\rho(\varepsilon)$ []',fontsize=25)
+    plt.xticks(fontsize=20)    
+    plt.yticks(fontsize=20)
     plt.show()
 
 def test_al_atom_velocity() :
@@ -186,9 +189,9 @@ def test_velocity_per_type() :
 
 if __name__ == "__main__" :
 
-    test_uniform_hemisphere()
+    # test_uniform_hemisphere()
     test_kinetic_energy_distribution()
-    test_al_atom_velocity()
-    test_generate_atomtypes_multiple()
-    test_generate_atomtypes_single()
-    test_velocity_per_type()
+    # test_al_atom_velocity()
+    # test_generate_atomtypes_multiple()
+    # test_generate_atomtypes_single()
+    # test_velocity_per_type()
