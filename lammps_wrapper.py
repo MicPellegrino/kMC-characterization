@@ -13,21 +13,6 @@ def lammps_units(lmp) :
     """
     lmp.commands_string(initialization_commands)
 
-def lammps_nstout(lmp, 
-    tout=125, ndump=25, nevery=25, nrepeat=10, nfreq=250, nrun=250) :
-
-    """ Define variables for output frequencies """
-    
-    output_variables=f"""
-    variable tout equal {tout}
-    variable ndump equal {ndump}
-    variable nevery equal {nevery}
-    variable nrepeat equal {nrepeat}
-    variable nfreq equal {nfreq}
-    variable nrun equal {nrun}
-    """
-    lmp.commands_string(output_variables)
-
 def lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list, 
     ff_style='eam/alloy', na_sub=1, na_ada=1) :
 

@@ -65,9 +65,6 @@ lmp = lammps.lammps(cmdargs=lmp_cmdargs.split())
 # Defining units and boundary conditions
 lmp_wrap.lammps_units(lmp)
 
-# Defining output frequency
-lmp_wrap.lammps_nstout(lmp)
-
 # Initial substrate configuration and system topology
 lmp_wrap.lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list, 
     na_sub=na_sub, na_ada=na_ada)
