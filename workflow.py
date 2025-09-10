@@ -14,8 +14,6 @@ nprocs = comm.Get_size()
 params = load_input_file("input.txt")
 Ed = params["Ed"]
 Na = params["Na"]
-# TODO: 'm' should be a vector of length na_ada
-# (Long-term plan: 'm' should be read from the ff file)
 m = params["m"]
 na_sub = params["na_sub"]
 na_ada = params["na_ada"]
@@ -42,10 +40,7 @@ T = params["T"]
 if me==0 :
     type_list = np.arange(na_sub+1,na_sub+na_ada+1)
     atype_vec = gen_atype_vector(type_list,frac_list,Na)
-    # TODO: 'velocity_distribution' should take 'atype_vec' as input and
-    # generate velocities depending on the atomtype and mass of that atomtype
-    # (with 'm' now being a vector)
-    vx, vy, vz, vabs = velocity_distribution(Ed,m,Na)
+    vx, vy, vz, vabs = velocity_per_type(Ed,m,Na,type_list,atype_vec)
     xr, yr = plane_uniform(0,125.55,0,125.55,Na)
 else :
     atype_vec = np.empty(Na,dtype=int)
@@ -69,9 +64,6 @@ lmp = lammps.lammps(cmdargs=lmp_cmdargs.split())
 
 # Defining units and boundary conditions
 lmp_wrap.lammps_units(lmp)
-
-# Defining output frequency
-lmp_wrap.lammps_nstout(lmp)
 
 # Initial substrate configuration and system topology
 lmp_wrap.lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list, 
