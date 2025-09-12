@@ -71,9 +71,8 @@ def gen_atype_vector(type_list,frac_list,N) :
 
 ###########################################
 
-# TODO: the nondimensional collision mass 'wm' should be a function of the atom type.
-#       I am too lazy to implement it now, but probably it's not so important.
-def velocity_per_type(Ed,m_vec,N,type_list,atype_vec,kTg=0,nc=0,wm=1) :
+# The default atomic mass for the collision gas is the one of Argon (39.948u)
+def velocity_per_type(Ed,m_vec,N,type_list,atype_vec,kTg=0,nc=0,mg=39.948) :
     
     vx = np.zeros(N)
     vy = np.zeros(N)
@@ -88,6 +87,7 @@ def velocity_per_type(Ed,m_vec,N,type_list,atype_vec,kTg=0,nc=0,wm=1) :
         ek = kinetic_energy(Ed,Ni)
 
         # Collisions with gas before getting to the substrate:
+        wm = 4*(mg*m_vec[i])/((mg+m_vec[i])**2)
         ek = ekin_f(ek,kTg,nc,wm)
 
         prefac_i = SI2METAL*CFSR*np.sqrt(2*ek/m_vec[i])
@@ -169,7 +169,7 @@ def test_generate_atomtypes_single() :
     v = gen_atype_vector(type_list,frac_list,N)
     print(np.sum(v==2))
 
-def test_velocity_per_type(kTg=0,nc=0,wm=1) :
+def test_velocity_per_type(kTg=0,nc=0) :
     import matplotlib.pyplot as plt
     Ed = 10
     N = 300000
@@ -183,7 +183,7 @@ def test_velocity_per_type(kTg=0,nc=0,wm=1) :
     idx_4 = idx_4.ravel()
     idx_5 = np.argwhere(atype_vec==5)
     idx_5 = idx_5.ravel()
-    vx, vy, vz, vabs = velocity_per_type(Ed,m_vec,N,type_list,atype_vec,kTg,nc,wm)
+    vx, vy, vz, vabs = velocity_per_type(Ed,m_vec,N,type_list,atype_vec,kTg,nc)
     plt.hist(vabs[idx_3],bins=int(np.sqrt(N//3)),density=True,label='Al',alpha=0.75)
     plt.hist(vabs[idx_4],bins=int(np.sqrt(N//3)),density=True,label='Mo',alpha=0.75)
     plt.hist(vabs[idx_5],bins=int(np.sqrt(N//3)),density=True,label='Ni',alpha=0.75)
@@ -207,4 +207,4 @@ if __name__ == "__main__" :
     # test_al_atom_velocity()
     # test_generate_atomtypes_multiple()
     # test_generate_atomtypes_single()
-    test_velocity_per_type(nc=2)
+    test_velocity_per_type(kTg=0.067,nc=2)
