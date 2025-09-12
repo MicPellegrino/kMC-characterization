@@ -2,9 +2,10 @@ import numpy as np
 import numpy.random as rng
 
 # Global conversion factors
-CONV1 = 1.661 # [amu->Kg]
-CONV2 = 1.602 # [eV->J]
+CONV1 = 1.661 # [1e27 amu->Kg]
+CONV2 = 1.602 # [1e19 eV->J]
 CFSR = np.sqrt(CONV2/CONV1)
+SI2METAL = 1e2 # [m/s->A/ps]
 
 # Tranformation of kinetic energy due to collisions
 ekin_f = lambda ekin, kTg, n, w : (ekin-kTg)*np.exp(n*np.log(1-0.5*w))+kTg
@@ -38,7 +39,7 @@ def kinetic_energy(Ed,N,a_cut=100) :
 
 def velocity_distribution(Ed,m,N) :
     ek = kinetic_energy(Ed,N)
-    prefac = (1e2)*CFSR*np.sqrt(2*ek/m)
+    prefac = SI2METAL*CFSR*np.sqrt(2*ek/m)
     xs, ys, zs = uniform_unit_hemisphere(N)
     vx = prefac*xs
     vy = prefac*ys
@@ -85,7 +86,7 @@ def velocity_per_type(Ed,m_vec,N,type_list,atype_vec,kTg=0,n=0,w=1) :
         idx = idx.ravel()   # Sometimes numpy is really stupid...
         ek = kinetic_energy(Ed,Ni)
         ek = ekin_f(ek,kTg,n,w)
-        prefac_i = (1e2)*CFSR*np.sqrt(2*ek/m_vec[i])
+        prefac_i = SI2METAL*CFSR*np.sqrt(2*ek/m_vec[i])
         xs, ys, zs = uniform_unit_hemisphere(Ni)
 
         vx[idx] = prefac_i*xs
@@ -182,14 +183,16 @@ def test_velocity_per_type() :
     plt.hist(vabs[idx_3],bins=int(np.sqrt(N//3)),density=True,label='Al',alpha=0.75)
     plt.hist(vabs[idx_4],bins=int(np.sqrt(N//3)),density=True,label='Mo',alpha=0.75)
     plt.hist(vabs[idx_5],bins=int(np.sqrt(N//3)),density=True,label='Ni',alpha=0.75)
+    plt.xlabel('A/ps')
     plt.legend()
     plt.show()
-    ekin_3 = 0.5*m_vec[0]*vabs[idx_3]*vabs[idx_3]
-    ekin_4 = 0.5*m_vec[1]*vabs[idx_4]*vabs[idx_4]
-    ekin_5 = 0.5*m_vec[2]*vabs[idx_5]*vabs[idx_5]
+    ekin_3 = 0.5*m_vec[0]*vabs[idx_3]*vabs[idx_3]/(SI2METAL*CFSR)**2
+    ekin_4 = 0.5*m_vec[1]*vabs[idx_4]*vabs[idx_4]/(SI2METAL*CFSR)**2
+    ekin_5 = 0.5*m_vec[2]*vabs[idx_5]*vabs[idx_5]/(SI2METAL*CFSR)**2
     plt.hist(ekin_3,bins=int(np.sqrt(N//3)),density=True,label='Al',alpha=0.75)
     plt.hist(ekin_4,bins=int(np.sqrt(N//3)),density=True,label='Mo',alpha=0.75)
     plt.hist(ekin_5,bins=int(np.sqrt(N//3)),density=True,label='Ni',alpha=0.75)
+    plt.xlabel('eV')
     plt.legend()
     plt.show()
 
@@ -200,4 +203,4 @@ if __name__ == "__main__" :
     # test_al_atom_velocity()
     # test_generate_atomtypes_multiple()
     # test_generate_atomtypes_single()
-    # test_velocity_per_type()
+    test_velocity_per_type()
