@@ -1,4 +1,4 @@
-Tested on `Python 3.10.0`.
+Tested on `Python 3.10.0` and LAMMPS `12Jun2025`.
 List of packages:
 ```
 Package         Version
