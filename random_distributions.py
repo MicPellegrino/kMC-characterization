@@ -8,7 +8,8 @@ CFSR = np.sqrt(CONV2/CONV1)
 SI2METAL = 1e2 # [m/s->A/ps]
 
 # Tranformation of kinetic energy due to collisions
-ekin_f = lambda ekin, kTg, n, w : (ekin-kTg)*np.exp(n*np.log(1-0.5*w))+kTg
+# kTg = [eV], nc = [], wm = []
+ekin_f = lambda ekin, kTg, nc, wm : (ekin-kTg)*np.exp(nc*np.log(1-0.5*wm))+kTg
 
 ###########################################
 
@@ -70,9 +71,9 @@ def gen_atype_vector(type_list,frac_list,N) :
 
 ###########################################
 
-# TODO: the nondimensional collision mass 'w' should be a function of the atom type.
+# TODO: the nondimensional collision mass 'wm' should be a function of the atom type.
 #       I am too lazy to implement it now, but probably it's not so important.
-def velocity_per_type(Ed,m_vec,N,type_list,atype_vec,kTg=0,n=0,w=1) :
+def velocity_per_type(Ed,m_vec,N,type_list,atype_vec,kTg=0,nc=0,wm=1) :
     
     vx = np.zeros(N)
     vy = np.zeros(N)
@@ -85,7 +86,10 @@ def velocity_per_type(Ed,m_vec,N,type_list,atype_vec,kTg=0,n=0,w=1) :
         idx = np.argwhere(atype_vec==type_list[i])
         idx = idx.ravel()   # Sometimes numpy is really stupid...
         ek = kinetic_energy(Ed,Ni)
-        ek = ekin_f(ek,kTg,n,w)
+
+        # Collisions with gas before getting to the substrate:
+        ek = ekin_f(ek,kTg,nc,wm)
+
         prefac_i = SI2METAL*CFSR*np.sqrt(2*ek/m_vec[i])
         xs, ys, zs = uniform_unit_hemisphere(Ni)
 
@@ -165,7 +169,7 @@ def test_generate_atomtypes_single() :
     v = gen_atype_vector(type_list,frac_list,N)
     print(np.sum(v==2))
 
-def test_velocity_per_type() :
+def test_velocity_per_type(kTg=0,nc=0,wm=1) :
     import matplotlib.pyplot as plt
     Ed = 10
     N = 300000
@@ -179,7 +183,7 @@ def test_velocity_per_type() :
     idx_4 = idx_4.ravel()
     idx_5 = np.argwhere(atype_vec==5)
     idx_5 = idx_5.ravel()
-    vx, vy, vz, vabs = velocity_per_type(Ed,m_vec,N,type_list,atype_vec)
+    vx, vy, vz, vabs = velocity_per_type(Ed,m_vec,N,type_list,atype_vec,kTg,nc,wm)
     plt.hist(vabs[idx_3],bins=int(np.sqrt(N//3)),density=True,label='Al',alpha=0.75)
     plt.hist(vabs[idx_4],bins=int(np.sqrt(N//3)),density=True,label='Mo',alpha=0.75)
     plt.hist(vabs[idx_5],bins=int(np.sqrt(N//3)),density=True,label='Ni',alpha=0.75)
@@ -199,8 +203,8 @@ def test_velocity_per_type() :
 if __name__ == "__main__" :
 
     # test_uniform_hemisphere()
-    test_kinetic_energy_distribution()
+    # test_kinetic_energy_distribution()
     # test_al_atom_velocity()
     # test_generate_atomtypes_multiple()
     # test_generate_atomtypes_single()
-    test_velocity_per_type()
+    test_velocity_per_type(nc=2)
