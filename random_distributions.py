@@ -6,6 +6,9 @@ CONV1 = 1.661 # [amu->Kg]
 CONV2 = 1.602 # [eV->J]
 CFSR = np.sqrt(CONV2/CONV1)
 
+# Tranformation of kinetic energy due to collisions
+ekin_f = lambda ekin, kTg, n, w : (ekin-kTg)*np.exp(n*np.log(1-0.5*w))+kTg
+
 ###########################################
 
 def uniform_unit_hemisphere(N) :
@@ -66,7 +69,9 @@ def gen_atype_vector(type_list,frac_list,N) :
 
 ###########################################
 
-def velocity_per_type(Ed,m_vec,N,type_list,atype_vec) :
+# TODO: the nondimensional collision mass 'w' should be a function of the atom type.
+#       I am too lazy to implement it now, but probably it's not so important.
+def velocity_per_type(Ed,m_vec,N,type_list,atype_vec,kTg=0,n=0,w=1) :
     
     vx = np.zeros(N)
     vy = np.zeros(N)
@@ -79,6 +84,7 @@ def velocity_per_type(Ed,m_vec,N,type_list,atype_vec) :
         idx = np.argwhere(atype_vec==type_list[i])
         idx = idx.ravel()   # Sometimes numpy is really stupid...
         ek = kinetic_energy(Ed,Ni)
+        ek = ekin_f(ek,kTg,n,w)
         prefac_i = (1e2)*CFSR*np.sqrt(2*ek/m_vec[i])
         xs, ys, zs = uniform_unit_hemisphere(Ni)
 
