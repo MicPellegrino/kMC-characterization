@@ -5,6 +5,8 @@ import numpy as np
 import numpy.random as rng
 from mpi4py import MPI
 
+# For now we assume equiatomic composition (HEA)
+# TODO: support general stoichiometry
 class Alloy :
     def __init__(self, ntypes, typelist, phase, a):
         self.ntypes = ntypes
@@ -46,6 +48,7 @@ alloys = dict()
 alloys['Al'] = Alloy(1,['Al'],'fcc',4.05)
 alloys['Mo'] = Alloy(1,['Mo'],'bcc',3.15)
 alloys['Ni'] = Alloy(1,['Ni'],'fcc',3.52)
+alloys['AlTi'] = Alloy(2,['Al','Ti'],'fcc',4.05)
 
 # Simulation box parameters
 dLz = 10.0
@@ -80,7 +83,7 @@ for an in alloys.keys() :
         ff_flavour='eam/alloy',
         seed=rng.randint(99999),
         orient='100',
-        GPU=False)
+        GPU=True)
     # Generate 110 substrate
     nx = nx_ref
     ny = int(np.round(ny_ref/np.sqrt(2)))
@@ -96,7 +99,7 @@ for an in alloys.keys() :
         ff_flavour='eam/alloy',
         seed=rng.randint(99999),
         orient='110',
-        GPU=False)
+        GPU=True)
     # Generate 111 substrate
     nx = int(np.round(nx_ref/np.sqrt(2)))
     ny = int(np.round(1.5*ny_ref/np.sqrt(6)))
@@ -112,4 +115,4 @@ for an in alloys.keys() :
         ff_flavour='eam/alloy',
         seed=rng.randint(99999),
         orient='111',
-        GPU=False)
+        GPU=True)

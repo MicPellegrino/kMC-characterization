@@ -13,10 +13,11 @@ def lammps_units(lmp) :
     """
     lmp.commands_string(initialization_commands)
 
+# TODO: Support for MEAM and NNPs
 def lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list, 
     ff_style='eam/alloy', na_sub=1, na_ada=1) :
 
-    """ Define inital coonfiguration, atom types and groups, force field """
+    """ Define inital configuration, atom types and groups, force field """
 
     lmp.command(f"read_data {substrate_file} extra/atom/types {na_ada}")
 

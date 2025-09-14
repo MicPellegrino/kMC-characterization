@@ -2,9 +2,14 @@ import numpy as np
 import numpy.random as rng
 
 # Global conversion factors
-CONV1 = 1.661 # [amu->Kg]
-CONV2 = 1.602 # [eV->J]
+CONV1 = 1.661 # [1e27 amu->Kg]
+CONV2 = 1.602 # [1e19 eV->J]
 CFSR = np.sqrt(CONV2/CONV1)
+SI2METAL = 1e2 # [m/s->A/ps]
+
+# Tranformation of kinetic energy due to collisions
+# kTg = [eV], nc = [], wm = []
+ekin_f = lambda ekin, kTg, nc, wm : (ekin-kTg)*np.exp(nc*np.log(1-0.5*wm))+kTg
 
 ###########################################
 
@@ -35,7 +40,7 @@ def kinetic_energy(Ed,N,a_cut=100) :
 
 def velocity_distribution(Ed,m,N) :
     ek = kinetic_energy(Ed,N)
-    prefac = (1e2)*CFSR*np.sqrt(2*ek/m)
+    prefac = SI2METAL*CFSR*np.sqrt(2*ek/m)
     xs, ys, zs = uniform_unit_hemisphere(N)
     vx = prefac*xs
     vy = prefac*ys
@@ -66,7 +71,8 @@ def gen_atype_vector(type_list,frac_list,N) :
 
 ###########################################
 
-def velocity_per_type(Ed,m_vec,N,type_list,atype_vec) :
+# The default atomic mass for the collision gas is the one of Argon (39.948u)
+def velocity_per_type(Ed,m_vec,N,type_list,atype_vec,kTg=0,nc=0,mg=39.948) :
     
     vx = np.zeros(N)
     vy = np.zeros(N)
@@ -79,7 +85,12 @@ def velocity_per_type(Ed,m_vec,N,type_list,atype_vec) :
         idx = np.argwhere(atype_vec==type_list[i])
         idx = idx.ravel()   # Sometimes numpy is really stupid...
         ek = kinetic_energy(Ed,Ni)
-        prefac_i = (1e2)*CFSR*np.sqrt(2*ek/m_vec[i])
+
+        # Collisions with gas before getting to the substrate:
+        wm = 4*(mg*m_vec[i])/((mg+m_vec[i])**2)
+        ek = ekin_f(ek,kTg,nc,wm)
+
+        prefac_i = SI2METAL*CFSR*np.sqrt(2*ek/m_vec[i])
         xs, ys, zs = uniform_unit_hemisphere(Ni)
 
         vx[idx] = prefac_i*xs
@@ -158,7 +169,7 @@ def test_generate_atomtypes_single() :
     v = gen_atype_vector(type_list,frac_list,N)
     print(np.sum(v==2))
 
-def test_velocity_per_type() :
+def test_velocity_per_type(kTg=0,nc=0) :
     import matplotlib.pyplot as plt
     Ed = 10
     N = 300000
@@ -172,26 +183,28 @@ def test_velocity_per_type() :
     idx_4 = idx_4.ravel()
     idx_5 = np.argwhere(atype_vec==5)
     idx_5 = idx_5.ravel()
-    vx, vy, vz, vabs = velocity_per_type(Ed,m_vec,N,type_list,atype_vec)
+    vx, vy, vz, vabs = velocity_per_type(Ed,m_vec,N,type_list,atype_vec,kTg,nc)
     plt.hist(vabs[idx_3],bins=int(np.sqrt(N//3)),density=True,label='Al',alpha=0.75)
     plt.hist(vabs[idx_4],bins=int(np.sqrt(N//3)),density=True,label='Mo',alpha=0.75)
     plt.hist(vabs[idx_5],bins=int(np.sqrt(N//3)),density=True,label='Ni',alpha=0.75)
+    plt.xlabel('A/ps')
     plt.legend()
     plt.show()
-    ekin_3 = 0.5*m_vec[0]*vabs[idx_3]*vabs[idx_3]
-    ekin_4 = 0.5*m_vec[1]*vabs[idx_4]*vabs[idx_4]
-    ekin_5 = 0.5*m_vec[2]*vabs[idx_5]*vabs[idx_5]
+    ekin_3 = 0.5*m_vec[0]*vabs[idx_3]*vabs[idx_3]/(SI2METAL*CFSR)**2
+    ekin_4 = 0.5*m_vec[1]*vabs[idx_4]*vabs[idx_4]/(SI2METAL*CFSR)**2
+    ekin_5 = 0.5*m_vec[2]*vabs[idx_5]*vabs[idx_5]/(SI2METAL*CFSR)**2
     plt.hist(ekin_3,bins=int(np.sqrt(N//3)),density=True,label='Al',alpha=0.75)
     plt.hist(ekin_4,bins=int(np.sqrt(N//3)),density=True,label='Mo',alpha=0.75)
     plt.hist(ekin_5,bins=int(np.sqrt(N//3)),density=True,label='Ni',alpha=0.75)
+    plt.xlabel('eV')
     plt.legend()
     plt.show()
 
 if __name__ == "__main__" :
 
     # test_uniform_hemisphere()
-    test_kinetic_energy_distribution()
+    # test_kinetic_energy_distribution()
     # test_al_atom_velocity()
     # test_generate_atomtypes_multiple()
     # test_generate_atomtypes_single()
-    # test_velocity_per_type()
+    test_velocity_per_type(kTg=0.067,nc=2)
