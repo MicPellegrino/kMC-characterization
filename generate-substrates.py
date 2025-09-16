@@ -45,10 +45,11 @@ def generate_substrate(name,
 
 os.system("mkdir substrates")
 alloys = dict()
-alloys['Al'] = Alloy(1,['Al'],'fcc',4.05)
-alloys['Mo'] = Alloy(1,['Mo'],'bcc',3.15)
-alloys['Ni'] = Alloy(1,['Ni'],'fcc',3.52)
-alloys['AlTi'] = Alloy(2,['Al','Ti'],'fcc',4.05)
+# alloys['Al'] = Alloy(1,['Al'],'fcc',4.05)
+# alloys['Mo'] = Alloy(1,['Mo'],'bcc',3.15)
+# alloys['Ni'] = Alloy(1,['Ni'],'fcc',3.52)
+# alloys['AlTi'] = Alloy(2,['Al','Ti'],'fcc',4.05)
+alloys['AlTi_bcc'] = Alloy(2,['Al','Ti'],'bcc',3.179)
 
 # Simulation box parameters
 dLz = 10.0
