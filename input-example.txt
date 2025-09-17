@@ -21,3 +21,6 @@ yuppi = 125.55
 zlowi = 40
 zuppi = 50
 T = 300
+Tg = 0
+nc = 0
+mg = 39.948
