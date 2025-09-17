@@ -20,3 +20,12 @@ setuptools      80.9.0
 six             1.17.0
 wheel           0.45.1
 ```
+Ovito is installed after creating a `mamba` venv with the desired Python version, activating it and running:
+```
+mamba install --strict-channel-priority -c https://conda.ovito.org -c conda-forge ovito=3.11.1
+```
+
+TODO
+- Incude a `dump` for text trajectories of the whole system with coarse temporal resolution (for visualization purposes);
+- Include a `fix` to compute the MSD of PVD atoms (not sure if it's correct or useful);
+- Create an Ovito post-processing script to obtain the spatial density of PVD atoms.
