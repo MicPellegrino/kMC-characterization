@@ -6,6 +6,9 @@ from parser import load_input_file
 from mpi4py import MPI
 import sys
 
+# Boltzmann constant in eV/K
+BOLTZMANN_EV = 8.61733326e-5
+
 comm = MPI.COMM_WORLD
 idproc = comm.Get_rank()
 nprocs = comm.Get_size()
@@ -40,11 +43,14 @@ Tg = params["Tg"]
 nc = params["nc"]
 mg = params["mg"]
 
+# Thermal energy of the gas
+kTg = Tg*BOLTZMANN_EV
+
 # Arrays containing the initial velocities and positions of PVD atoms.
 if idproc==0 :
     type_list = np.arange(na_sub+1,na_sub+na_ada+1)
     atype_vec = gen_atype_vector(type_list,frac_list,Na)
-    vx, vy, vz, vabs = velocity_per_type(Ed,m,Na,type_list,atype_vec)
+    vx, vy, vz, vabs = velocity_per_type(Ed,m,Na,type_list,atype_vec,kTg,nc,mg)
     xr, yr = plane_uniform(0,125.55,0,125.55,Na)
 else :
     atype_vec = np.empty(Na,dtype=int)
