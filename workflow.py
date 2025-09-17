@@ -7,7 +7,7 @@ from mpi4py import MPI
 import sys
 
 comm = MPI.COMM_WORLD
-me = comm.Get_rank()
+idproc = comm.Get_rank()
 nprocs = comm.Get_size()
 
 # TODO: I/O should only be from rank 0
@@ -37,7 +37,7 @@ zuppi = params["zuppi"]
 T = params["T"]
 
 # Arrays containing the initial velocities and positions of PVD atoms.
-if me==0 :
+if idproc==0 :
     type_list = np.arange(na_sub+1,na_sub+na_ada+1)
     atype_vec = gen_atype_vector(type_list,frac_list,Na)
     vx, vy, vz, vabs = velocity_per_type(Ed,m,Na,type_list,atype_vec)
