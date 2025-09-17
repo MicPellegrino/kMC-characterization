@@ -11,6 +11,7 @@ idproc = comm.Get_rank()
 nprocs = comm.Get_size()
 
 # TODO: I/O should only be from rank 0
+# TODO: deal with default cases
 params = load_input_file("input.txt")
 Ed = params["Ed"]
 Na = params["Na"]
@@ -35,6 +36,9 @@ yuppi = params["yuppi"]
 zlowi = params["zlowi"]
 zuppi = params["zuppi"]
 T = params["T"]
+Tg = params["Tg"]
+nc = params["nc"]
+mg = params["mg"]
 
 # Arrays containing the initial velocities and positions of PVD atoms.
 if idproc==0 :
