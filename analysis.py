@@ -16,11 +16,14 @@ class Counts:
         self.GRAPHENE = 0
 
 def polyhedral_template_matching(conf_data,conf_dump=None) :
+    
     if conf_dump == None :
         pipeline_ptm = import_file(conf_data)
     else :
+        # How to properly append the .data file?
         pipeline_ptm = import_file(conf_dump)
     pipeline_ptm.modifiers.append(PolyhedralTemplateMatchingModifier())
+    
     fractions = dict()
     fractions['OTHER'] = []
     fractions['FCC'] = []
@@ -31,45 +34,56 @@ def polyhedral_template_matching(conf_data,conf_dump=None) :
     fractions['CUBIC_DIAMOND'] = []
     fractions['HEX_DIAMOND'] = []
     fractions['GRAPHENE'] = []
+
     for data in pipeline_ptm.frames:
         n_other = data.attributes['PolyhedralTemplateMatching.counts.OTHER']
         f_other = n_other / data.particles.count
-        # ...
+        fractions['OTHER'].append(f_other)
         n_fcc = data.attributes['PolyhedralTemplateMatching.counts.FCC']
         f_fcc = n_fcc / data.particles.count
-        # f_fcc_vec.append(f_fcc)
+        fractions['FCC'].append(f_fcc)
         n_hcp = data.attributes['PolyhedralTemplateMatching.counts.HCP']
         f_hcp = n_hcp / data.particles.count
-        # f_hcp_vec.append(f_hcp)
+        fractions['HCP'].append(f_hcp)
         n_bcc = data.attributes['PolyhedralTemplateMatching.counts.BCC']
         f_bcc = n_bcc / data.particles.count
-        # f_bcc_vec.append(f_bcc)
+        fractions['BCC'].append(f_bcc)
         n_ico = data.attributes['PolyhedralTemplateMatching.counts.ICO']
         f_ico = n_ico / data.particles.count
-        # ...
+        fractions['ICO'].append(f_ico)
         n_sc = data.attributes['PolyhedralTemplateMatching.counts.SC']
         f_sc = n_sc / data.particles.count
-        # ...
+        fractions['SC'].append(f_sc)
         n_cubicdiamond = data.attributes['PolyhedralTemplateMatching.counts.CUBIC_DIAMOND']
         f_cubicdiamond = n_cubicdiamond / data.particles.count
-        # ...
+        fractions['CUBIC_DIAMOND'].append(f_cubicdiamond)
         n_hexdiamond = data.attributes['PolyhedralTemplateMatching.counts.HEX_DIAMOND']
         f_hexdiamond = n_hexdiamond / data.particles.count
-        # ...
+        fractions['HEX_DIAMOND'].append(f_hexdiamond)
         n_graphene = data.attributes['PolyhedralTemplateMatching.counts.GRAPHENE']
         f_graphene = n_graphene / data.particles.count
-        # ...
+        fractions['GRAPHENE'].append(f_graphene)
+
+    return fractions
+
 
 ### TESTS ###
 
 def test_polyhedral_template_matching() :
     
+    import matplotlib.pyplot as plt 
     conf_data = "test/test-files/cofeni.data"
     conf_dump = "test/test-files/cofeni.dump"
     print("Testing without trajectory")
     polyhedral_template_matching(conf_data)
     print("Testing with trajectory")
-    polyhedral_template_matching(conf_data,conf_dump)
+    fractions = polyhedral_template_matching(conf_data,conf_dump)
+    for ptm_type in fractions.keys() :
+        plt.plot(fractions[ptm_type], label=ptm_type)
+    plt.legend()
+    plt.xlabel('frame')
+    plt.ylabel('fraction')
+    plt.show()
 
 if __name__ == "__main__" :
 
