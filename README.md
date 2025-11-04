@@ -27,3 +27,5 @@ mamba install --strict-channel-priority -c https://conda.ovito.org -c conda-forg
 
 TODO
 - Include a `fix` to compute the MSD of PVD atoms (not sure if it's correct or useful);
+- Include support for MEAM potentials
+- Include support for MACE via ML-IAP interface
