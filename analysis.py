@@ -20,7 +20,7 @@ def polyhedral_template_matching(conf_data,conf_dump=None) :
     if conf_dump == None :
         pipeline_ptm = import_file(conf_data)
     else :
-        # How to properly append the .data file?
+        # TODO: How to properly append the .data file?
         pipeline_ptm = import_file(conf_dump)
     pipeline_ptm.modifiers.append(PolyhedralTemplateMatchingModifier())
     
