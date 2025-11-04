@@ -27,4 +27,3 @@ mamba install --strict-channel-priority -c https://conda.ovito.org -c conda-forg
 
 TODO
 - Include a `fix` to compute the MSD of PVD atoms (not sure if it's correct or useful);
-- Create an Ovito post-processing script to obtain the spatial density of PVD atoms.

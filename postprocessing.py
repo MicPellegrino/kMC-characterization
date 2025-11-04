@@ -8,8 +8,10 @@ conf_dump = "coarse.dump"
 
 dt_coarse = 0.001*5000
 
+print("Performing Polyhedral Template Matching...")
 fractions = polyhedral_template_matching(conf_data,conf_dump)
-bin_profiles, bin_centres = density_profile(conf_data,conf_dump,nbins=50)
+print("Performing density profile binning...")
+bin_profiles, bin_centres = density_profile(conf_data,conf_dump,nbins=100)
 
 for ptm_type in fractions.keys() :
     n = len(fractions[ptm_type])
