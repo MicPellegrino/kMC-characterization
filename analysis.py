@@ -1,13 +1,14 @@
 # Library of Ovito wrappers to perform basic analysis (PTM, density profiles, ...)
 
-from ovito.modifiers import *
+from ovito.io import *
 from ovito.modifiers import *
 
 def polyhedral_template_matching(conf_data,conf_dump=None) :
     if conf_dump == None :
         pipeline_ptm = import_file(conf_data)
     else :
-        pipeline_ptm = import_file([conf_dump,conf_data])
+        pipeline_ptm = import_file([conf_data,conf_dump])
+    pipeline_ptm.modifiers.append(PolyhedralTemplateMatchingModifier())
 
 ### TESTS ###
 
@@ -19,3 +20,7 @@ def test_polyhedral_template_matching() :
     polyhedral_template_matching(conf_data)
     print("Testing with trajectory")
     polyhedral_template_matching(conf_data,conf_dump)
+
+if __name__ == "__main__" :
+
+    test_polyhedral_template_matching()
