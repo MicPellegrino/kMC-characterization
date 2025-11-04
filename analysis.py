@@ -2,6 +2,7 @@
 
 from ovito.io import *
 from ovito.modifiers import *
+import numpy as np
 
 class Counts:
     def __init__(self):
@@ -67,6 +68,44 @@ def polyhedral_template_matching(conf_data,conf_dump=None) :
     return fractions
 
 
+def density_profile(conf_data,conf_dump=None,nbins=20) :
+    
+    if conf_dump == None :
+        pipeline_ptm = import_file(conf_data)
+    else :
+        # TODO: How to properly append the .data file?
+        pipeline_ptm = import_file(conf_dump)
+
+    bin_profiles = []
+    bin_centres = []
+    for data in pipeline_ptm.frames:
+        # Assuming it's a cubic cell (i.e. non triclinic)
+        box_xx = data.cell[0,0]
+        box_yy = data.cell[1,1]
+        box_zz = data.cell[2,2]
+        centre_z = data.cell[2,3]
+        dz = box_zz/nbins
+        dV = box_xx*box_yy*dz
+        bin_centres.append(np.linspace(0.5*dz,box_zz-0.5*dz,nbins))
+        p_types = set()
+        for pt in data.particles["Particle Type"][...] :
+            p_types.add(pt)
+        bin_vals = dict()
+        for pt in p_types :
+            z_coord_pt = data.particles.positions[data.particles['Particle Type']==pt][:,2]
+            ntype = len(z_coord_pt)
+            bin_vals[pt] = np.zeros(nbins)
+            for n in range(ntype) :
+                z = z_coord_pt[n]-centre_z
+                z = z % box_zz
+                assert (z>=0 and z<box_zz), "Particle outside the simulation box!"
+                k = int(z/dz)
+                bin_vals[pt][k] += 1.0
+            bin_vals[pt] /= dV
+        bin_profiles.append(bin_vals)
+
+    return bin_profiles, bin_centres
+
 ### TESTS ###
 
 def test_polyhedral_template_matching() :
@@ -85,6 +124,24 @@ def test_polyhedral_template_matching() :
     plt.ylabel('fraction')
     plt.show()
 
+def test_density_profile() :
+    
+    import matplotlib.pyplot as plt 
+    conf_data = "test/test-files/cofeni.data"
+    conf_dump = "test/test-files/cofeni.dump"
+    print("Testing without trajectory")
+    bin_profiles, bin_centres = density_profile(conf_data)
+    plt.plot(bin_centres[0],bin_profiles[0][1], label='type 1')
+    plt.plot(bin_centres[0],bin_profiles[0][2], label='type 2')
+    plt.plot(bin_centres[0],bin_profiles[0][3], label='type 3')
+    plt.legend()
+    plt.xlabel('z [Å]')
+    plt.ylabel(r'number density [1/Å$^3$]')
+    plt.show()
+    print("Testing with trajectory")
+    density_profile(conf_data,conf_dump)
+
 if __name__ == "__main__" :
 
-    test_polyhedral_template_matching()
+    # test_polyhedral_template_matching()
+    test_density_profile()
