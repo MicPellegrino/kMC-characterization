@@ -57,7 +57,8 @@ def lammps_freeze(lmp, xlow, xupp, ylow, yupp, zlow, zupp) :
     lmp.commands_string(freeze)
 
 def lammps_dump(lmp, 
-    sub_traj='substrate.dcd', coll_traj='collisions.dump', tout=125, ndump=25, nevery=25, nrepeat=10, nfreq=250) :
+    sub_traj='substrate.dcd', coll_traj='collisions.dump', coarse_traj='coarse.dump', 
+    tout=125, ndump=25, nevery=25, nrepeat=10, nfreq=250, ndump_coarse=5000) :
 
     """ Defining the output observables and trajectories """
 
@@ -69,6 +70,7 @@ def lammps_dump(lmp,
     variable dummyMol atom "gmask(substrate)+2.0*gmask(adatoms)+3.0*gmask(frozen)"
     dump myDcd substrate dcd {ndump} {sub_traj}
     dump myDump adatoms custom {ndump} {coll_traj} id type x y z xu yu zu vx vy vz v_dummyMol
+    dump myDumpCoarse all custom {ndump_coarse} {coarse_traj} id type x y z xu yu zu vx vy vz v_dummyMol
     fix avePe adatoms ave/time {nevery} {nrepeat} {nfreq} v_pea_avg ave one file pe.dat
     """
     lmp.commands_string(output_definitions)
