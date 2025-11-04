@@ -105,6 +105,7 @@ def density_profile(conf_data,conf_dump=None,nbins=20) :
         bin_profiles.append(bin_vals)
 
     return bin_profiles, bin_centres
+    
 
 ### TESTS ###
 
