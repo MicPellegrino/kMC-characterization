@@ -53,7 +53,7 @@ def lmp_box(lmp, ntypes, dLx, seed=12345678) :
         fi = (f0-fa)/f0
         command_set_type = f"set type {i+1} type/fraction {i+2} {fi} {seed}"
         lmp.command(command_set_type)
-        f0 = (ntypes-i+1)*fa
+        f0 = (ntypes-(i+1))*fa
 
 def lmp_potential_eam(lmp, ffname, type_names, flavour='eam/alloy') :
 
