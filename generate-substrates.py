@@ -5,6 +5,8 @@ import numpy as np
 import numpy.random as rng
 from mpi4py import MPI
 
+# TODO: support MEAM (at least), for now only EAM is supported for substrate creation!
+
 # For now we assume equiatomic composition (HEA)
 # TODO: support general stoichiometry
 class Alloy :
