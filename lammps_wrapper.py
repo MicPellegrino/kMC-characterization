@@ -37,8 +37,12 @@ def lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list,
     topology=f"""
     group substrate type {types_sub}
     group adatoms type {types_ada}
-    pair_style {ff_style} 
-    pair_coeff * * {ff_file} {type_names_string}
+    """
+    if ff_style=='eam/alloy' or ff_style=='eam' or ff_style=='eam/fs' :
+        topology+=f"""pair_style {ff_style} 
+        pair_coeff * * {ff_file} {type_names_string}
+        """
+    topology+=f"""
     neighbor 2.0 bin
     neigh_modify delay 0 every 1 check yes
     """
