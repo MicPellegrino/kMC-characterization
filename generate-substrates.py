@@ -51,11 +51,13 @@ alloys = dict()
 # alloys['Mo'] = Alloy(1,['Mo'],'bcc',3.15)
 # alloys['Ni'] = Alloy(1,['Ni'],'fcc',3.52)
 # alloys['AlTi'] = Alloy(2,['Al','Ti'],'fcc',4.05)
-alloys['AlTi_bcc'] = Alloy(2,['Al','Ti'],'bcc',3.179)
+# alloys['AlTi_bcc'] = Alloy(2,['Al','Ti'],'bcc',3.179)
+alloys['CoFeNi_fcc'] = Alloy(3,['Co','Fe','Ni'],'fcc',3.58)
 
 # Simulation box parameters
 dLz = 10.0
-ffname = 'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy'
+# ffname = 'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy'
+ffname = 'test/FeNiCrCoCu-with-ZBL.eam.alloy'
 
 ### NB! BCC has less atoms per unit cell (and so on...) ###
 
