@@ -6,6 +6,7 @@ na_ada = 1
 substrate_file = substrates/Al_100.data
 ff_style = eam/alloy
 ff_file = test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy
+ff_meam_lib = None
 frac_list = 1.0
 sub_an_list = Al
 ada_an_list = Ti
