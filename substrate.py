@@ -51,7 +51,7 @@ def lmp_box(lmp, ntypes, dLx, seed=12345678) :
     fa = 1.0/ntypes
     for i in range(ntypes-1) :
         fi = (f0-fa)/f0
-        command_set_type = f"set type {i+1} type/fraction {i+2} {fi} {seed}"
+        command_set_type = f"set type {i+1} type/fraction {i+2} {fi} {seed+i*1000}"
         lmp.command(command_set_type)
         f0 = (ntypes-(i+1))*fa
 
