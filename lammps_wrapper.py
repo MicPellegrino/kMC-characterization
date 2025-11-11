@@ -15,7 +15,7 @@ def lammps_units(lmp) :
 
 # TODO: Support for MEAM and NNPs
 def lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list, 
-    ff_style='eam/alloy', na_sub=1, na_ada=1) :
+    ff_style='eam/alloy', ff_meam_lib=None, na_sub=1, na_ada=1) :
 
     """ Define inital configuration, atom types and groups, force field """
 
@@ -44,7 +44,7 @@ def lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list,
         """
     if ff_style=='meam' or ff_style=='meam/ms' :
         topology+=f"""pair_style {ff_style} 
-        pair_coeff * * {ff_file[0]} {type_names_string} {ff_file[1]} {type_names_string}
+        pair_coeff * * {ff_meam_lib} {ff_file} {type_names_string}
         """
     topology+=f"""
     neighbor 2.0 bin
