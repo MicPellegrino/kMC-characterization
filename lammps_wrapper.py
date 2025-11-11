@@ -42,6 +42,10 @@ def lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list,
         topology+=f"""pair_style {ff_style} 
         pair_coeff * * {ff_file} {type_names_string}
         """
+    if ff_style=='meam' or ff_style=='meam/ms' :
+        topology+=f"""pair_style {ff_style} 
+        pair_coeff * * {ff_file[0]} {type_names_string} {ff_file[1]} {type_names_string}
+        """
     topology+=f"""
     neighbor 2.0 bin
     neigh_modify delay 0 every 1 check yes
