@@ -23,6 +23,7 @@ na_sub = params["na_sub"]
 na_ada = params["na_ada"]
 frac_list = params["frac_list"]
 substrate_file = params["substrate_file"]
+ff_style = params["ff_style"]
 ff_file = params["ff_file"]
 sub_an_list = params["sub_an_list"]
 ada_an_list = params["ada_an_list"]
@@ -77,7 +78,7 @@ lmp_wrap.lammps_units(lmp)
 
 # Initial substrate configuration and system topology
 lmp_wrap.lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list, 
-    na_sub=na_sub, na_ada=na_ada)
+    ff_style=ff_style, na_sub=na_sub, na_ada=na_ada)
 
 # Freezing some of the lower layers of the substrate to prevent downward motion
 lmp_wrap.lammps_freeze(lmp, xlowf, xuppf, ylowf, yuppf, zlowf, zuppf)
