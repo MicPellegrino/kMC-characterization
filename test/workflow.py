@@ -47,9 +47,9 @@ kokkos_flags = ['-k','on','g','1','-sf','kk']
 # kokkos_flags = ['-k','on','g','1','-sf','kk']
 
 if has_kokkos_cuda_support:
-    lmp = lammps.lammps(cmdargs=native_flags,comm=comm)
-elif is_gpu_available and has_native_gpu_support :
     lmp = lammps.lammps(cmdargs=kokkos_flags,comm=comm)
+elif is_gpu_available and has_native_gpu_support :
+    lmp = lammps.lammps(cmdargs=native_flags,comm=comm)
 else :
     lmp = lammps.lammps(comm=comm)
 
