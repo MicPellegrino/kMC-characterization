@@ -8,6 +8,7 @@ me = comm.Get_rank()
 nprocs = comm.Get_size()
 
 Ed = 10
+# Na = 5000
 Na = 100
 m_Al = 26.982
 
@@ -28,16 +29,29 @@ comm.Bcast(vabs, root=0)
 comm.Bcast(xr, root=0)
 comm.Bcast(yr, root=0)
 
-##### LAMMPS run #####
-# Check if a GPU is available (and visible to LAMMPS)
-is_gpu_available = lammps.lammps().has_gpu_device
-# Check if LAMMPS has been build with GPU support (native)
-has_native_gpu_support = lammps.lammps().has_package("GPU")
-if is_gpu_available and has_native_gpu_support :
-    lmp = lammps.lammps(cmdargs=['-pk','gpu','1','-sf','gpu'])
-# TODO: consider the case of KOKKOS GPU support
+_lmp=lammps.lammps()
+# Check if a GPU is available by the *native* GPU interface
+is_gpu_available = _lmp.has_gpu_device
+# Check if LAMMPS has been build with native GPU support
+has_native_gpu_support = _lmp.has_package("GPU")
+# Check if KOKKOS has been built with CUDA support
+kokkos_conf = _lmp.accelerator_config['KOKKOS']
+has_kokkos_cuda_support = ('cuda' in kokkos_conf['api'])
+_lmp.close()
+
+native_flags = ['-pk','gpu','1','-sf','gpu']
+kokkos_flags = ['-k','on','g','1','-sf','kk']
+
+# TEST: running with MPI and no GPU
+# native_flags = []
+# kokkos_flags = ['-k','on','g','1','-sf','kk']
+
+if has_kokkos_cuda_support:
+    lmp = lammps.lammps(cmdargs=native_flags,comm=comm)
+elif is_gpu_available and has_native_gpu_support :
+    lmp = lammps.lammps(cmdargs=kokkos_flags,comm=comm)
 else :
-    lmp = lammps.lammps()
+    lmp = lammps.lammps(comm=comm)
 
 substrate_file = "Al_100_relax.data"
 
@@ -113,4 +127,7 @@ for n in range(Na) :
 # Saving after
 lmp.command("write_data collisions_post.data")
 
-MPI.Finalize()
+lmp.close()
+if has_kokkos_cuda_support :
+    lmp.lib.lammps_kokkos_finalize()
+MPI.Finalize()    
