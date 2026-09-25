@@ -8,7 +8,7 @@ me = comm.Get_rank()
 nprocs = comm.Get_size()
 
 Ed = 10
-Na = 5000
+Na = 100
 m_Al = 26.982
 
 if me==0 :
@@ -28,9 +28,16 @@ comm.Bcast(vabs, root=0)
 comm.Bcast(xr, root=0)
 comm.Bcast(yr, root=0)
 
-##### LAMMPS run ##### 
-lmp = lammps.lammps()
-# lmp = lammps.lammps(cmdargs=['-pk','gpu','1','-sf','gpu'])
+##### LAMMPS run #####
+# Check if a GPU is available (and visible to LAMMPS)
+is_gpu_available = lammps.lammps().has_gpu_device
+# Check if LAMMPS has been build with GPU support (native)
+has_native_gpu_support = lammps.lammps().has_package("GPU")
+if is_gpu_available and has_native_gpu_support :
+    lmp = lammps.lammps(cmdargs=['-pk','gpu','1','-sf','gpu'])
+# TODO: consider the case of KOKKOS GPU support
+else :
+    lmp = lammps.lammps()
 
 substrate_file = "Al_100_relax.data"
 
