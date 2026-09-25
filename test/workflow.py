@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, "/".join(__file__.split("/")[:-2]))
+
 import lammps
 import numpy as np
 from random_distributions import uniform_unit_hemisphere, kinetic_energy, velocity_distribution, plane_uniform
