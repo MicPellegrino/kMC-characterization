@@ -27,6 +27,12 @@ and running:
 ```
 mamba install --strict-channel-priority -c https://conda.ovito.org -c conda-forge ovito=3.11.1
 ```
+Other packages you may want to install:
+```
+matplotlib
+mpi4py
+```
+I suggest using `pip` to install additional packages.
 
 TODO
 - Include a `fix` to compute the MSD of PVD atoms (not sure if it's correct or useful);
