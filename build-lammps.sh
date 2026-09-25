@@ -1,7 +1,7 @@
 #!/bin/bash
 
-mkdir lammps-12Jun2025/build-cuda
-cd lammps-12Jun2025/build-cuda
+mkdir lammps-22Jul2025/build-cuda
+cd lammps-22Jul2025/build-cuda
 
 cmake \
     -D BUILD_MPI=on \
