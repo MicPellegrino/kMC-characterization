@@ -31,6 +31,9 @@ Other packages you may want to install:
 ```
 matplotlib
 mpi4py
+ase
+scipy
+cython
 ```
 I suggest using `pip` to install additional packages.
 
