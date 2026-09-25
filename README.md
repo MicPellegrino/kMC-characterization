@@ -1,26 +1,29 @@
-Tested on `Python 3.10.0` and LAMMPS `12Jun2025`.
+Tested on `Python 3.10.0` and LAMMPS `22Jul2025`.
 List of packages:
 ```
-Package         Version
---------------- -----------
-contourpy       1.3.2
-cycler          0.12.1
-fonttools       4.58.4
-kiwisolver      1.4.8
-lammps          2025.6.12
-matplotlib      3.10.3
-mpi4py          4.0.3
-numpy           2.2.6
-packaging       25.0
-pillow          11.2.1
-pip             25.1.1
-pyparsing       3.2.3
-python-dateutil 2.9.0.post0
-setuptools      80.9.0
-six             1.17.0
-wheel           0.45.1
+Package                Version
+---------------------- ---------
+lammps                 2025.7.22
+numpy                  1.26.4
+ovito                  3.11.1
+packaging              26.3
+pip                    26.2.1
+PySide6                6.7.3
+setuptools             84.0.0
+shiboken6              6.7.3
+traits                 7.1.0
+WarrenCowleyParameters 3.0.1
+wheel                  0.48.0
 ```
-Ovito is installed after creating a `mamba` venv with the desired Python version, activating it and running:
+Ovito is installed after creating a `mamba` venv with the desired Python version:
+```
+mamba env create -n kmc python=3.10.0
+```
+activating it:
+```
+mamba activate kmc
+```
+and running:
 ```
 mamba install --strict-channel-priority -c https://conda.ovito.org -c conda-forge ovito=3.11.1
 ```
