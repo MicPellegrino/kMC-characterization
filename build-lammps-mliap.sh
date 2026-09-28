@@ -16,6 +16,7 @@ cmake \
     -D Kokkos_ARCH_SPR=on \
     -D Kokkos_ARCH_AMPERE86=on \
     -D Kokkos_PREC=mixed \
+    -D Kokkos_ENABLE_SERIAL=on \
     -D FFT_KOKKOS=CUFFT \
     -D BUILD_MPI=on \
     -D PKG_ML-IAP=on \
