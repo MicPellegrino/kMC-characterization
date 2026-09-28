@@ -70,6 +70,12 @@ comm.Bcast(xr, root=0)
 comm.Bcast(yr, root=0)
 comm.Bcast(atype_vec, root=0)
 
+# Testing if LAMMPS has KOKKOS (TODO: not only GPU!)
+_lmp=lammps.lammps()
+kokkos_conf = _lmp.accelerator_config['KOKKOS']
+has_kokkos_cuda_support = ('cuda' in kokkos_conf['api'])
+_lmp.close()
+
 # LAMMPS 'cmdargs' is passed as input when calling the script from the cmd line
 lmp_cmdargs = ' '.join(sys.argv[1:])
 lmp = lammps.lammps(cmdargs=lmp_cmdargs.split())
@@ -102,4 +108,7 @@ lmp_wrap.lammps_coat(lmp, Na, atype_vec, xr, yr, vabs, zgen=45)
 # Saving after
 lmp.command("write_data collisions_post.data")
 
+lmp.close()
+if has_kokkos_cuda_support :
+    lmp.lib.lammps_kokkos_finalize()
 MPI.Finalize()
