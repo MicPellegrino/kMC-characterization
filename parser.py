@@ -1,3 +1,6 @@
+# TODO: I/O should only be from rank 0
+# TODO: deal with default cases
+
 def load_input_file(filename):
 
     variables = {}
@@ -14,7 +17,7 @@ def load_input_file(filename):
             
             # Handle special variables
             # TODO: now 'm' is also a "special variable"
-            if key in ("frac_list", "m"):
+            if key in ("frac_list", "m","sub_m_list"):
                 variables[key] = [float(v) for v in value.split()]
             elif key in ("sub_an_list", "ada_an_list"):
                 variables[key] = value.split()
@@ -33,5 +36,6 @@ def load_input_file(filename):
     assert len(variables['m'])==variables['na_ada'], "Adatom mass vector not matching number of adatom types"
     assert len(variables['ada_an_list'])==variables['na_ada'], "Adatom type list not matching number of adatom types"
     assert len(variables['sub_an_list'])==variables['na_sub'], "Substrate type list not matching number of substrate types"
+    assert len(variables['sub_m_list']) == variables['na_sub'], "Substrate mass vector not matching number of substrate types"
 
     return variables

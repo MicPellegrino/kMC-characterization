@@ -1,4 +1,5 @@
 import lammps
+import lammps.mliap
 import lammps_wrapper as lmp_wrap
 import numpy as np
 from random_distributions import *
@@ -15,14 +16,13 @@ nprocs = comm.Get_size()
 
 lmp_build = lmp_wrap.LammpsBuild()
 
-# TODO: I/O should only be from rank 0
-# TODO: deal with default cases
 params = load_input_file("input.txt")
 Ed = params["Ed"]
 Na = params["Na"]
 m = params["m"]
 na_sub = params["na_sub"]
 na_ada = params["na_ada"]
+sub_m_list = params["sub_m_list"]
 frac_list = params["frac_list"]
 substrate_file = params["substrate_file"]
 ff_style = params["ff_style"]
@@ -72,16 +72,21 @@ comm.Bcast(xr, root=0)
 comm.Bcast(yr, root=0)
 comm.Bcast(atype_vec, root=0)
 
+
 # LAMMPS 'cmdargs' is passed as input when calling the script from the cmd line
 lmp_cmdargs = ' '.join(sys.argv[1:])
 lmp = lammps.lammps(cmdargs=lmp_cmdargs.split(),comm=comm)
+
+# Activate ML-IAP if the style is MACE or ML-IAP
+if ff_style == 'mace' or ff_style == 'mliap' :
+    lammps.mliap.activate_mliappy_kokkos(lmp)
 
 # Defining units and boundary conditions
 lmp_wrap.lammps_units(lmp)
 
 # Initial substrate configuration and system topology
 lmp_wrap.lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list, 
-    ff_style=ff_style, ff_meam_lib=ff_meam_lib, na_sub=na_sub, na_ada=na_ada)
+    ff_style=ff_style, ff_meam_lib=ff_meam_lib, na_sub=na_sub, na_ada=na_ada, masses=sub_m_list+m)
 
 # Freezing some of the lower layers of the substrate to prevent downward motion
 lmp_wrap.lammps_freeze(lmp, xlowf, xuppf, ylowf, yuppf, zlowf, zuppf)
