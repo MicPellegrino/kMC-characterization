@@ -55,11 +55,11 @@ def lmp_box(lmp, ntypes, dLx, seed=12345678) :
         lmp.command(command_set_type)
         f0 = (ntypes-(i+1))*fa
 
-def lmp_potential_eam(lmp, ffname, type_names, ff_type) :
+def lmp_potential_eam(lmp, ffname, type_names, fftype) :
 
     """ Definition of the interatomic potential (Embedded Atom Model) """
 
-    command_style=f"pair_style {ff_type}"
+    command_style=f"pair_style {fftype}"
     lmp.command(command_style)
 
     command_pair=f"pair_coeff * * {ffname}"
@@ -73,14 +73,35 @@ def lmp_potential_eam(lmp, ffname, type_names, ff_type) :
     neigh_modify delay 0 every 1 check yes
     """
 
-def lmp_potential_meam(lmp, ffname, fflib, type_names, ff_type) :
+def lmp_potential_meam(lmp, ffname, fflib, type_names, fftype) :
 
     """ Definition of the interatomic potential (ModifiedEmbedded Atom Model) """
 
-    command_style=f"pair_style {ff_type}"
+    command_style=f"pair_style {fftype}"
     lmp.command(command_style)
 
     command_pair=f"pair_coeff * * {fflib} {ffname}"
+    for n in type_names :
+        command_pair += (' '+n)
+    lmp.command(command_pair)
+
+    # In principle these should not be touched!
+    commands="""
+    neighbor 2.0 bin
+    neigh_modify delay 0 every 1 check yes
+    """
+
+def lmp_potential_mliap(lmp, ffname, type_names, mass_vec) :
+
+    """ Definition of the machine-learned interatomic potential (ML-IAP inetrface) """
+
+    for i in range(len(mass_vec)) :
+        lmp.command(f"mass {i+1} {mass_vec[i]}")
+
+    command_style=f"pair_style mliap unified {ffname} 0"
+    lmp.command(command_style)
+
+    command_pair=f"pair_coeff * *"
     for n in type_names :
         command_pair += (' '+n)
     lmp.command(command_pair)

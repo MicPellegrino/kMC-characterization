@@ -17,6 +17,9 @@ class LammpsBuild() :
         self.kokkos_conf = self.accelerator_config['KOKKOS']
         self.has_kokkos_cuda_support = ('cuda' in self.kokkos_conf['api'])
         
+        # Check if it has been built with ML-IAP interface
+        self.has_ml_iap_support = lmp.has_package("ML-IAP")
+
         # Close temporary LAMMPS instance
         lmp.close()
 

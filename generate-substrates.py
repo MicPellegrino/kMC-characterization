@@ -1,6 +1,7 @@
 import os
 from substrate import *
 import lammps
+import lammps.mliap
 from lammps_wrapper import LammpsBuild
 import numpy as np
 import numpy.random as rng
@@ -42,6 +43,7 @@ def generate_substrate(lmp_build,
     ff_name,
     ff_type,
     ff_lib=None,
+    mass_vec=None,
     seed=1234,
     orient='100',
     tout=50,
@@ -61,14 +63,15 @@ def generate_substrate(lmp_build,
         lmp_potential_eam(lmp,ff_name,alloy.typelist,ff_type)
     if ff_type == 'meam' or  ff_type == 'meam/ms' :
         lmp_potential_meam(lmp,ff_name,ff_lib,alloy.typelist,ff_type)
+    if ff_type == 'mace' or  ff_type == 'mliap' :
+        lammps.mliap.activate_mliappy_kokkos(lmp)
+        lmp_potential_mliap(lmp,ff_name,alloy.typelist,mass_vec)
     lmp_energy_min(lmp)
     lmp_md_output(lmp,tout=tout)
     lmp_relaxation(lmp,nsteps=nsteps,seed=seed)
     lmp.command(f"write_data {name}")
 
     lmp.close()
-    if lmp_build.has_kokkos_cuda_support :
-        lmp.lib.lammps_kokkos_finalize()
 
 
 os.system("mkdir -p substrates")
@@ -78,28 +81,47 @@ alloys = dict()
 # alloys['Ni'] = Alloy(1,['Ni'],'fcc',3.52)
 # alloys['AlTi'] = Alloy(2,['Al','Ti'],'fcc',4.05)
 # alloys['AlTi_bcc'] = Alloy(2,['Al','Ti'],'bcc',3.179)
-alloys['CoFeNi_fcc'] = Alloy(3,['Co','Fe','Ni'],'fcc',3.58)
+# alloys['CoFeNi_fcc'] = Alloy(3,['Co','Fe','Ni'],'fcc',3.58)
+alloys['AlTiWMoCr_bcc'] = Alloy(5,['Al','Ti','W','Mo','Cr'],'bcc',3.1)
+
+# Workaround for MACE (beacuse for f***ing reasons cannot store masses fy helvete)
+mass_vec = [26.9815385,47.94794198,183.9509312,97.90540482,51.94050623]
 
 # Simulation box parameters
 dLz = 10.0
-# fftype = 'eam/alloy'
-# ffname = 'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy'
-# ffname = 'test/FeNiCrCoCu-with-ZBL.eam.alloy'
+# EAM
+"""
+fftype = 'eam/alloy'
+ffname = 'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy'
+ffname = 'test/FeNiCrCoCu-with-ZBL.eam.alloy'
+fflib = None
+"""
+# MEAM
+"""
 fftype = 'meam'
 ffname = 'test/CoNiCrFeMn-meam/CoNiCrFeMn.meam'
 fflib = 'test/CoNiCrFeMn-meam/library.meam Co Ni Cr Fe Mn'
+"""
+#MACE
+fftype = 'mace'
+ffname = 'mace/potentials/8_gpu.model-mliap_lammps.pt'
+fflib = None
 
 ### NB! BCC has less atoms per unit cell (and so on...) ###
 
+nx_ref_fcc = 20
+ny_ref_fcc = 20
+nz_ref_fcc = 6
+
 for an in alloys.keys() :
     if alloys[an].phase=='fcc' :
-        nx_ref = DEFAULT_NX
-        ny_ref = DEFAULT_NY
-        ns_ref = DEFAULT_NZ
+        nx_ref = nx_ref_fcc
+        ny_ref = ny_ref_fcc
+        ns_ref = nz_ref_fcc
     elif alloys[an].phase=='bcc' :
-        nx_ref = int(np.round((2**(1/3))*31))
-        ny_ref = int(np.round((2**(1/3))*31))
-        ns_ref = int(np.round((2**(1/3))*7))
+        nx_ref = int(np.round((2**(1/3))*nx_ref_fcc))
+        ny_ref = int(np.round((2**(1/3))*ny_ref_fcc))
+        ns_ref = int(np.round((2**(1/3))*nz_ref_fcc))
     else :
         if idproc == 0 :
             print("!! Only FCC and BCC supported at the moment !!")
@@ -118,6 +140,7 @@ for an in alloys.keys() :
         ffname,
         ff_type=fftype,
         ff_lib=fflib,
+        mass_vec=mass_vec,
         seed=rng.randint(DEFAULT_SEED),
         orient='100')
     # Generate 110 substrate
@@ -135,6 +158,7 @@ for an in alloys.keys() :
         ffname,
         ff_type=fftype,
         ff_lib=fflib,
+        mass_vec=mass_vec,
         seed=rng.randint(DEFAULT_SEED),
         orient='110')
     # Generate 111 substrate
@@ -152,6 +176,7 @@ for an in alloys.keys() :
         ffname,
         ff_type=fftype,
         ff_lib=fflib,
+        mass_vec=mass_vec,
         seed=rng.randint(DEFAULT_SEED),
         orient='111')
 
