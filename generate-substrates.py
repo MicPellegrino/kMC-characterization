@@ -10,6 +10,10 @@ import sys
 # Global variables
 DEFAULT_NATIVE_GPU_FLAGS="-pk gpu 1 -sf gpu"
 DEFAULT_KOKKOS_GPU_FLAGS="-k on g 1 -sf kk"
+DEFAULT_SEED = 99999
+DEFAULT_NX = 31
+DEFAULT_NY = 31
+DEFAULT_NZ = 7
 
 comm = MPI.COMM_WORLD
 idproc = comm.Get_rank()
@@ -78,8 +82,10 @@ alloys['CoFeNi_fcc'] = Alloy(3,['Co','Fe','Ni'],'fcc',3.58)
 
 # Simulation box parameters
 dLz = 10.0
+# fftype = 'eam/alloy'
 # ffname = 'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy'
 # ffname = 'test/FeNiCrCoCu-with-ZBL.eam.alloy'
+fftype = 'meam'
 ffname = 'test/CoNiCrFeMn-meam/CoNiCrFeMn.meam'
 fflib = 'test/CoNiCrFeMn-meam/library.meam Co Ni Cr Fe Mn'
 
@@ -87,9 +93,9 @@ fflib = 'test/CoNiCrFeMn-meam/library.meam Co Ni Cr Fe Mn'
 
 for an in alloys.keys() :
     if alloys[an].phase=='fcc' :
-        nx_ref = 31
-        ny_ref = 31
-        ns_ref = 7
+        nx_ref = DEFAULT_NX
+        ny_ref = DEFAULT_NY
+        ns_ref = DEFAULT_NZ
     elif alloys[an].phase=='bcc' :
         nx_ref = int(np.round((2**(1/3))*31))
         ny_ref = int(np.round((2**(1/3))*31))
@@ -110,9 +116,9 @@ for an in alloys.keys() :
         ns,
         dLz,
         ffname,
-        ff_type='meam',
+        ff_type=fftype,
         ff_lib=fflib,
-        seed=rng.randint(99999),
+        seed=rng.randint(DEFAULT_SEED),
         orient='100')
     # Generate 110 substrate
     nx = nx_ref
@@ -127,9 +133,9 @@ for an in alloys.keys() :
         ns,
         dLz,
         ffname,
-        ff_type='meam',
+        ff_type=fftype,
         ff_lib=fflib,
-        seed=rng.randint(99999),
+        seed=rng.randint(DEFAULT_SEED),
         orient='110')
     # Generate 111 substrate
     nx = int(np.round(nx_ref/np.sqrt(2)))
@@ -144,9 +150,9 @@ for an in alloys.keys() :
         ns,
         dLz,
         ffname,
-        ff_type='meam',
+        ff_type=fftype,
         ff_lib=fflib,
-        seed=rng.randint(99999),
+        seed=rng.randint(DEFAULT_SEED),
         orient='111')
 
 MPI.Finalize()
