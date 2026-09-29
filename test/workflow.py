@@ -4,15 +4,22 @@ sys.path.insert(0, "/".join(__file__.split("/")[:-2]))
 import lammps
 import numpy as np
 from random_distributions import uniform_unit_hemisphere, kinetic_energy, velocity_distribution, plane_uniform
+from lammps_wrapper import LammpsBuild
 from mpi4py import MPI
 
 comm = MPI.COMM_WORLD
 me = comm.Get_rank()
 nprocs = comm.Get_size()
 
+lmp_build = LammpsBuild()
+native_flags = ['-pk','gpu','1','-sf','gpu']
+kokkos_flags = ['-k','on','g','1','-sf','kk']
+# TEST: running with MPI and no GPU
+# native_flags = []
+# kokkos_flags = []
+
 Ed = 10
-# Na = 5000
-Na = 100
+Na = 10
 m_Al = 26.982
 
 if me==0 :
@@ -32,26 +39,9 @@ comm.Bcast(vabs, root=0)
 comm.Bcast(xr, root=0)
 comm.Bcast(yr, root=0)
 
-_lmp=lammps.lammps()
-# Check if a GPU is available by the *native* GPU interface
-is_gpu_available = _lmp.has_gpu_device
-# Check if LAMMPS has been build with native GPU support
-has_native_gpu_support = _lmp.has_package("GPU")
-# Check if KOKKOS has been built with CUDA support
-kokkos_conf = _lmp.accelerator_config['KOKKOS']
-has_kokkos_cuda_support = ('cuda' in kokkos_conf['api'])
-_lmp.close()
-
-native_flags = ['-pk','gpu','1','-sf','gpu']
-kokkos_flags = ['-k','on','g','1','-sf','kk']
-
-# TEST: running with MPI and no GPU
-# native_flags = []
-# kokkos_flags = ['-k','on','g','1','-sf','kk']
-
-if has_kokkos_cuda_support:
+if lmp_build.has_kokkos_cuda_support:
     lmp = lammps.lammps(cmdargs=kokkos_flags,comm=comm)
-elif is_gpu_available and has_native_gpu_support :
+elif lmp_build.is_gpu_available and lmp_build.has_native_gpu_support :
     lmp = lammps.lammps(cmdargs=native_flags,comm=comm)
 else :
     lmp = lammps.lammps(comm=comm)
@@ -131,6 +121,6 @@ for n in range(Na) :
 lmp.command("write_data collisions_post.data")
 
 lmp.close()
-if has_kokkos_cuda_support :
+if lmp_build.has_kokkos_cuda_support :
     lmp.lib.lammps_kokkos_finalize()
 MPI.Finalize()    

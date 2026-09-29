@@ -1,6 +1,7 @@
 import os
 from substrate import *
 import lammps
+from lammps_wrapper import LammpsBuild
 import numpy as np
 import numpy.random as rng
 from mpi4py import MPI
@@ -14,7 +15,9 @@ comm = MPI.COMM_WORLD
 idproc = comm.Get_rank()
 nprocs = comm.Get_size()
 
-# TODO: support MEAM and NNPs
+lmp_build = LammpsBuild()
+
+# TODO: support NNPs
 
 # For now we assume equiatomic composition (HEA)
 # TODO: support general stoichiometry
@@ -25,28 +28,21 @@ class Alloy :
         self.phase = phase
         self.a = a
 
-def generate_substrate(name,
+def generate_substrate(lmp_build,
+    name,
     alloy,
     nx,
     ny,
     ns,
     dLx,
     ff_name,
-    ff_flavour,
+    ff_type,
     ff_lib=None,
-    ff_type='EAM',
     seed=1234,
     orient='100',
     tout=50,
     nsteps=1000,
     flags=None) :
-
-    # TODO: Wrap this into a separate funciton/class that determines the LAMMPS build
-    # Testing if LAMMPS has KOKKOS (TODO: not only GPU!)
-    _lmp=lammps.lammps()
-    kokkos_conf = _lmp.accelerator_config['KOKKOS']
-    has_kokkos_cuda_support = ('cuda' in kokkos_conf['api'])
-    _lmp.close()
 
     if flags==None :
         lmp_cmdargs = ' '.join(sys.argv[1:])
@@ -57,17 +53,17 @@ def generate_substrate(name,
     lmp_header(lmp)
     lmp_lattice(lmp,alloy.a,nx,ny,ns,alloy.phase,orient)
     lmp_box(lmp,alloy.ntypes,dLx)
-    if ff_type == "EAM" :
-        lmp_potential_eam(lmp,ff_name,alloy.typelist,ff_flavour)
-    if ff_type == "MEAM" :
-        lmp_potential_meam(lmp,ff_name,ff_lib,alloy.typelist,ff_flavour)
+    if ff_type == 'eam' or ff_type == 'eam/alloy' or ff_type == 'eam/fs' :
+        lmp_potential_eam(lmp,ff_name,alloy.typelist,ff_type)
+    if ff_type == 'meam' or  ff_type == 'meam/ms' :
+        lmp_potential_meam(lmp,ff_name,ff_lib,alloy.typelist,ff_type)
     lmp_energy_min(lmp)
     lmp_md_output(lmp,tout=tout)
     lmp_relaxation(lmp,nsteps=nsteps,seed=seed)
     lmp.command(f"write_data {name}")
 
     lmp.close()
-    if has_kokkos_cuda_support :
+    if lmp_build.has_kokkos_cuda_support :
         lmp.lib.lammps_kokkos_finalize()
 
 
@@ -90,7 +86,6 @@ fflib = 'test/CoNiCrFeMn-meam/library.meam Co Ni Cr Fe Mn'
 ### NB! BCC has less atoms per unit cell (and so on...) ###
 
 for an in alloys.keys() :
-    print(alloys[an])
     if alloys[an].phase=='fcc' :
         nx_ref = 31
         ny_ref = 31
@@ -100,22 +95,23 @@ for an in alloys.keys() :
         ny_ref = int(np.round((2**(1/3))*31))
         ns_ref = int(np.round((2**(1/3))*7))
     else :
-        print("!! Only FCC and BCC supported at the moment !!")
+        if idproc == 0 :
+            print("!! Only FCC and BCC supported at the moment !!")
     # Generate 100 substrate
     nx = nx_ref
     ny = ny_ref
     ns = ns_ref
     name = 'substrates/'+an+'_100.data'
-    generate_substrate(name,
+    generate_substrate(lmp_build,
+        name,
         alloys[an],
         nx,
         ny,
         ns,
         dLz,
         ffname,
-        ff_flavour='meam',
+        ff_type='meam',
         ff_lib=fflib,
-        ff_type='MEAM',
         seed=rng.randint(99999),
         orient='100')
     # Generate 110 substrate
@@ -123,16 +119,16 @@ for an in alloys.keys() :
     ny = int(np.round(ny_ref/np.sqrt(2)))
     ns = int(np.round(ns_ref/np.sqrt(2)))
     name = 'substrates/'+an+'_110.data'
-    generate_substrate(name,
+    generate_substrate(lmp_build,
+        name,
         alloys[an],
         nx,
         ny,
         ns,
         dLz,
         ffname,
-        ff_flavour='meam',
+        ff_type='meam',
         ff_lib=fflib,
-        ff_type='MEAM',
         seed=rng.randint(99999),
         orient='110')
     # Generate 111 substrate
@@ -140,16 +136,16 @@ for an in alloys.keys() :
     ny = int(np.round(1.5*ny_ref/np.sqrt(6)))
     ns = int(np.round(ns_ref/np.sqrt(3)))
     name = 'substrates/'+an+'_111.data'
-    generate_substrate(name,
+    generate_substrate(lmp_build,
+        name,
         alloys[an],
         nx,
         ny,
         ns,
         dLz,
         ffname,
-        ff_flavour='meam',
+        ff_type='meam',
         ff_lib=fflib,
-        ff_type='MEAM',
         seed=rng.randint(99999),
         orient='111')
 

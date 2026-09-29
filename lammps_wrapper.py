@@ -1,5 +1,25 @@
 import lammps
 
+class LammpsBuild() :
+
+    def __init__(self) :
+
+        lmp=lammps.lammps()
+        
+        # Check if a GPU is available by the *native* GPU interface
+        self.is_gpu_available = lmp.has_gpu_device
+        
+        # Check if LAMMPS has been build with native GPU support
+        self.has_native_gpu_support = lmp.has_package("GPU")
+        
+        # Check if KOKKOS has been built with CUDA support
+        self.accelerator_config = lmp.accelerator_config
+        self.kokkos_conf = self.accelerator_config['KOKKOS']
+        self.has_kokkos_cuda_support = ('cuda' in self.kokkos_conf['api'])
+        
+        # Close temporary LAMMPS instance
+        lmp.close()
+
 def lammps_units(lmp) :
 
     """ Default units and b.c. for metallic systems """

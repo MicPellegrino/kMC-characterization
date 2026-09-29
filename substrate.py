@@ -55,11 +55,11 @@ def lmp_box(lmp, ntypes, dLx, seed=12345678) :
         lmp.command(command_set_type)
         f0 = (ntypes-(i+1))*fa
 
-def lmp_potential_eam(lmp, ffname, type_names, flavour='eam/alloy') :
+def lmp_potential_eam(lmp, ffname, type_names, ff_type) :
 
     """ Definition of the interatomic potential (Embedded Atom Model) """
 
-    command_style=f"pair_style {flavour}"
+    command_style=f"pair_style {ff_type}"
     lmp.command(command_style)
 
     command_pair=f"pair_coeff * * {ffname}"
@@ -73,11 +73,11 @@ def lmp_potential_eam(lmp, ffname, type_names, flavour='eam/alloy') :
     neigh_modify delay 0 every 1 check yes
     """
 
-def lmp_potential_meam(lmp, ffname, fflib, type_names, flavour='meam') :
+def lmp_potential_meam(lmp, ffname, fflib, type_names, ff_type) :
 
     """ Definition of the interatomic potential (ModifiedEmbedded Atom Model) """
 
-    command_style=f"pair_style {flavour}"
+    command_style=f"pair_style {ff_type}"
     lmp.command(command_style)
 
     command_pair=f"pair_coeff * * {fflib} {ffname}"
