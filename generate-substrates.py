@@ -4,8 +4,13 @@ import lammps
 import numpy as np
 import numpy.random as rng
 from mpi4py import MPI
+import sys
 
-# TODO: support MEAM (at least), for now only EAM is supported for substrate creation!
+# Global variables
+DEFAULT_NATIVE_GPU_FLAGS="-pk gpu 1 -sf gpu"
+DEFAULT_KOKKOS_GPU_FLAGS="-k on g 1 -sf kk"
+
+# TODO: support MEAM and NNPs
 
 # For now we assume equiatomic composition (HEA)
 # TODO: support general stoichiometry
@@ -16,6 +21,7 @@ class Alloy :
         self.phase = phase
         self.a = a
 
+# TODO: Substitute 'GPU' with LAMMPS flags (possibly argv to make it more generic)
 def generate_substrate(name,
     alloy,
     nx,
@@ -28,12 +34,14 @@ def generate_substrate(name,
     orient='100',
     tout=50,
     nsteps=1000,
-    GPU=True) :
+    flags=None) :
 
-    if GPU :
-        lmp = lammps.lammps(cmdargs=['-pk','gpu','1','-sf','gpu'])
+    if flags==None :
+        lmp_cmdargs = ' '.join(sys.argv[1:])
     else :
-        lmp = lammps.lammps()
+        lmp_cmdargs = flags
+    lmp = lammps.lammps(cmdargs=lmp_cmdargs.split())
+
     lmp_header(lmp)
     lmp_lattice(lmp,alloy.a,nx,ny,ns,alloy.phase,orient)
     lmp_box(lmp,alloy.ntypes,dLx)
@@ -88,7 +96,7 @@ for an in alloys.keys() :
         ff_flavour='eam/alloy',
         seed=rng.randint(99999),
         orient='100',
-        GPU=True)
+        flags=DEFAULT_KOKKOS_GPU_FLAGS)
     # Generate 110 substrate
     nx = nx_ref
     ny = int(np.round(ny_ref/np.sqrt(2)))
@@ -104,7 +112,7 @@ for an in alloys.keys() :
         ff_flavour='eam/alloy',
         seed=rng.randint(99999),
         orient='110',
-        GPU=True)
+        flags=DEFAULT_KOKKOS_GPU_FLAGS)
     # Generate 111 substrate
     nx = int(np.round(nx_ref/np.sqrt(2)))
     ny = int(np.round(1.5*ny_ref/np.sqrt(6)))
@@ -120,4 +128,4 @@ for an in alloys.keys() :
         ff_flavour='eam/alloy',
         seed=rng.randint(99999),
         orient='111',
-        GPU=True)
+        flags=DEFAULT_KOKKOS_GPU_FLAGS)
