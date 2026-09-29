@@ -10,6 +10,10 @@ import sys
 DEFAULT_NATIVE_GPU_FLAGS="-pk gpu 1 -sf gpu"
 DEFAULT_KOKKOS_GPU_FLAGS="-k on g 1 -sf kk"
 
+comm = MPI.COMM_WORLD
+idproc = comm.Get_rank()
+nprocs = comm.Get_size()
+
 # TODO: support MEAM and NNPs
 
 # For now we assume equiatomic composition (HEA)
@@ -21,7 +25,6 @@ class Alloy :
         self.phase = phase
         self.a = a
 
-# TODO: Substitute 'GPU' with LAMMPS flags (possibly argv to make it more generic)
 def generate_substrate(name,
     alloy,
     nx,
@@ -30,30 +33,45 @@ def generate_substrate(name,
     dLx,
     ff_name,
     ff_flavour,
-    seed,
+    ff_lib=None,
+    ff_type='EAM',
+    seed=1234,
     orient='100',
     tout=50,
     nsteps=1000,
     flags=None) :
 
+    # TODO: Wrap this into a separate funciton/class that determines the LAMMPS build
+    # Testing if LAMMPS has KOKKOS (TODO: not only GPU!)
+    _lmp=lammps.lammps()
+    kokkos_conf = _lmp.accelerator_config['KOKKOS']
+    has_kokkos_cuda_support = ('cuda' in kokkos_conf['api'])
+    _lmp.close()
+
     if flags==None :
         lmp_cmdargs = ' '.join(sys.argv[1:])
     else :
         lmp_cmdargs = flags
-    lmp = lammps.lammps(cmdargs=lmp_cmdargs.split())
+    lmp = lammps.lammps(cmdargs=lmp_cmdargs.split(),comm=comm)
 
     lmp_header(lmp)
     lmp_lattice(lmp,alloy.a,nx,ny,ns,alloy.phase,orient)
     lmp_box(lmp,alloy.ntypes,dLx)
-    lmp_potential_eam(lmp,ff_name,alloy.typelist,flavour=ff_flavour)
+    if ff_type == "EAM" :
+        lmp_potential_eam(lmp,ff_name,alloy.typelist,ff_flavour)
+    if ff_type == "MEAM" :
+        lmp_potential_meam(lmp,ff_name,ff_lib,alloy.typelist,ff_flavour)
     lmp_energy_min(lmp)
     lmp_md_output(lmp,tout=tout)
     lmp_relaxation(lmp,nsteps=nsteps,seed=seed)
     lmp.command(f"write_data {name}")
+
     lmp.close()
+    if has_kokkos_cuda_support :
+        lmp.lib.lammps_kokkos_finalize()
 
 
-os.system("mkdir substrates")
+os.system("mkdir -p substrates")
 alloys = dict()
 # alloys['Al'] = Alloy(1,['Al'],'fcc',4.05)
 # alloys['Mo'] = Alloy(1,['Mo'],'bcc',3.15)
@@ -65,7 +83,9 @@ alloys['CoFeNi_fcc'] = Alloy(3,['Co','Fe','Ni'],'fcc',3.58)
 # Simulation box parameters
 dLz = 10.0
 # ffname = 'test/CuAgAuNiPdPtAlPbFeMoTaWMgCoTiZr_Zhou04.eam.alloy'
-ffname = 'test/FeNiCrCoCu-with-ZBL.eam.alloy'
+# ffname = 'test/FeNiCrCoCu-with-ZBL.eam.alloy'
+ffname = 'test/CoNiCrFeMn-meam/CoNiCrFeMn.meam'
+fflib = 'test/CoNiCrFeMn-meam/library.meam Co Ni Cr Fe Mn'
 
 ### NB! BCC has less atoms per unit cell (and so on...) ###
 
@@ -93,10 +113,11 @@ for an in alloys.keys() :
         ns,
         dLz,
         ffname,
-        ff_flavour='eam/alloy',
+        ff_flavour='meam',
+        ff_lib=fflib,
+        ff_type='MEAM',
         seed=rng.randint(99999),
-        orient='100',
-        flags=DEFAULT_KOKKOS_GPU_FLAGS)
+        orient='100')
     # Generate 110 substrate
     nx = nx_ref
     ny = int(np.round(ny_ref/np.sqrt(2)))
@@ -109,10 +130,11 @@ for an in alloys.keys() :
         ns,
         dLz,
         ffname,
-        ff_flavour='eam/alloy',
+        ff_flavour='meam',
+        ff_lib=fflib,
+        ff_type='MEAM',
         seed=rng.randint(99999),
-        orient='110',
-        flags=DEFAULT_KOKKOS_GPU_FLAGS)
+        orient='110')
     # Generate 111 substrate
     nx = int(np.round(nx_ref/np.sqrt(2)))
     ny = int(np.round(1.5*ny_ref/np.sqrt(6)))
@@ -125,7 +147,10 @@ for an in alloys.keys() :
         ns,
         dLz,
         ffname,
-        ff_flavour='eam/alloy',
+        ff_flavour='meam',
+        ff_lib=fflib,
+        ff_type='MEAM',
         seed=rng.randint(99999),
-        orient='111',
-        flags=DEFAULT_KOKKOS_GPU_FLAGS)
+        orient='111')
+
+MPI.Finalize()

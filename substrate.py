@@ -73,6 +73,24 @@ def lmp_potential_eam(lmp, ffname, type_names, flavour='eam/alloy') :
     neigh_modify delay 0 every 1 check yes
     """
 
+def lmp_potential_meam(lmp, ffname, fflib, type_names, flavour='meam') :
+
+    """ Definition of the interatomic potential (ModifiedEmbedded Atom Model) """
+
+    command_style=f"pair_style {flavour}"
+    lmp.command(command_style)
+
+    command_pair=f"pair_coeff * * {fflib} {ffname}"
+    for n in type_names :
+        command_pair += (' '+n)
+    lmp.command(command_pair)
+
+    # In principle these should not be touched!
+    commands="""
+    neighbor 2.0 bin
+    neigh_modify delay 0 every 1 check yes
+    """
+
 def lmp_energy_min(lmp, vmax=0.001, etol=1e-4, ftol=1e-6, maxiter=1000, maxeval=100000) :
 
     """ Substrate energy minimization """

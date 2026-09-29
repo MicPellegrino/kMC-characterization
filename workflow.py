@@ -78,7 +78,7 @@ _lmp.close()
 
 # LAMMPS 'cmdargs' is passed as input when calling the script from the cmd line
 lmp_cmdargs = ' '.join(sys.argv[1:])
-lmp = lammps.lammps(cmdargs=lmp_cmdargs.split())
+lmp = lammps.lammps(cmdargs=lmp_cmdargs.split(),comm=comm)
 
 # Defining units and boundary conditions
 lmp_wrap.lammps_units(lmp)
