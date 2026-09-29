@@ -38,5 +38,4 @@ cython
 I suggest using `pip` to install additional packages.
 
 TODO
-- Include a `fix` to compute the MSD of PVD atoms (not sure if it's correct or useful);
-- Include support for MACE via ML-IAP interface
+- Include a `fix` to compute the MSD of PVD atoms (not sure if it's correct or useful)
