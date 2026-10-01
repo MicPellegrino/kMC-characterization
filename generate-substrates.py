@@ -33,8 +33,7 @@ class Alloy :
         self.phase = phase
         self.a = a
 
-def generate_substrate(lmp_build,
-    name,
+def generate_substrate(name,
     alloy,
     nx,
     ny,
@@ -68,6 +67,7 @@ def generate_substrate(lmp_build,
         lmp_potential_mliap(lmp,ff_name,alloy.typelist,mass_vec)
     lmp_energy_min(lmp)
     lmp_md_output(lmp,tout=tout)
+    lmp_mcmd(lmp,ntypes=alloy.ntypes,seed=seed)
     lmp_relaxation(lmp,nsteps=nsteps,seed=seed)
     lmp.command(f"write_data {name}")
 
@@ -130,8 +130,7 @@ for an in alloys.keys() :
     ny = ny_ref
     ns = ns_ref
     name = 'substrates/'+an+'_100.data'
-    generate_substrate(lmp_build,
-        name,
+    generate_substrate(name,
         alloys[an],
         nx,
         ny,
@@ -148,8 +147,7 @@ for an in alloys.keys() :
     ny = int(np.round(ny_ref/np.sqrt(2)))
     ns = int(np.round(ns_ref/np.sqrt(2)))
     name = 'substrates/'+an+'_110.data'
-    generate_substrate(lmp_build,
-        name,
+    generate_substrate(name,
         alloys[an],
         nx,
         ny,
@@ -166,8 +164,7 @@ for an in alloys.keys() :
     ny = int(np.round(1.5*ny_ref/np.sqrt(6)))
     ns = int(np.round(ns_ref/np.sqrt(3)))
     name = 'substrates/'+an+'_111.data'
-    generate_substrate(lmp_build,
-        name,
+    generate_substrate(name,
         alloys[an],
         nx,
         ny,

@@ -1,4 +1,5 @@
 import lammps
+import numpy.random as rng
 import numpy as np
 from mpi4py import MPI
 
@@ -137,6 +138,39 @@ def lmp_md_output(lmp, tout) :
     thermo_style custom step v_pea_avg pe temp lx ly lz press
     """
     lmp.commands_string(commands)
+
+def lmp_mcmd(lmp, ntypes, seed=None, nsteps=10, T=300.0, nmc=1000) :
+
+    # Dummy timestep and fix to perform just MDMC
+    lmp.command("timestep 0.0")
+    lmp.command("fix dummy_mcmd_nve all nve")
+
+    tot_type_pairs = (ntypes*(ntypes-1))//2
+    nmc_type = int(nmc/(tot_type_pairs*nsteps))
+
+    assert nmc_type>0, "No per-pair swap, reduce nsteps"
+
+    print( "#####")
+    print(f"##### Performing {nmc} Monte Carlo atom swaps in {nsteps} ({nmc_type} per-pair, per-step)")
+    print( "#####")
+
+    if not(seed==None) :
+        rng.seed(seed)
+    fix_id = 1
+    for it in range(ntypes) :
+        for jt in range(it,ntypes) :
+            command_mcmd=f"fix mcmd{fix_id:02} all atom/swap 1 {nmc_type} {rng.randint(1,10000)} {T} ke yes types {it+1} {jt+1}"
+            lmp.command(command_mcmd)
+            fix_id += 1
+
+    lmp.command(f"run {nsteps}")
+    lmp.command("unfix dummy_mcmd_nve")
+
+    fix_id = 1
+    for it in range(ntypes) :
+        for jt in range(it,ntypes) :
+            lmp.command(f"unfix mcmd{fix_id:02}")
+            fix_id += 1
 
 def lmp_relaxation(lmp, nsteps, genvel=True, seed=None, dt=0.001, T=300.0, tdamp=1.0, P=0.0, pdamp=5.0) :
 
