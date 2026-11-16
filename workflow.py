@@ -6,6 +6,7 @@ from random_distributions import *
 from parser import load_input_file
 from mpi4py import MPI
 import sys
+from substrate import lmp_energy_min
 
 # Boltzmann constant in eV/K
 BOLTZMANN_EV = 8.61733326e-5
@@ -102,6 +103,9 @@ lmp_wrap.lammps_md(lmp, T)
 
 # Defining inflow region
 lmp_wrap.lammps_inflow(lmp, xlowi, xuppi, ylowi, yuppi, zlowi, zuppi)
+
+# Energy minimization (TODO: add a conditional in the input file)
+lmp_energy_min(lmp)
 
 # Simulation of the actual coating process
 lmp_wrap.lammps_coat(lmp, Na, atype_vec, xr, yr, vabs, zgen=45)
