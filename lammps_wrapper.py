@@ -36,7 +36,6 @@ def lammps_units(lmp) :
     """
     lmp.commands_string(initialization_commands)
 
-# TODO: Support for NNPs
 def lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list, 
     ff_style='eam/alloy', ff_meam_lib=None, na_sub=1, na_ada=1, masses=None) :
 
@@ -81,6 +80,10 @@ def lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list,
     elif ff_style=='symmetrix' :
         topology+=f"""pair_style symmetrix/mace
         pair_coeff * * {ff_file} {type_names_string}
+        """
+    elif ff_style=='nep' :
+        topology+=f"""pair_style matpl/nep/kk {ffname}
+        pair_coeff * * {type_names_string}
         """
 
     topology+=f"""
