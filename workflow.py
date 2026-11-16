@@ -95,6 +95,9 @@ lmp_wrap.lammps_freeze(lmp, xlowf, xuppf, ylowf, yuppf, zlowf, zuppf)
 # Saving pre
 lmp.command("write_data collisions_pre.data")
 
+# Energy minimization (TODO: add a conditional in the input file)
+lmp_energy_min(lmp)
+
 # Defining LAMMPS output
 lmp_wrap.lammps_dump(lmp)
 
@@ -103,9 +106,6 @@ lmp_wrap.lammps_md(lmp, T)
 
 # Defining inflow region
 lmp_wrap.lammps_inflow(lmp, xlowi, xuppi, ylowi, yuppi, zlowi, zuppi)
-
-# Energy minimization (TODO: add a conditional in the input file)
-lmp_energy_min(lmp)
 
 # Simulation of the actual coating process
 lmp_wrap.lammps_coat(lmp, Na, atype_vec, xr, yr, vabs, zgen=45)
