@@ -1,13 +1,36 @@
 #!/bin/bash
 
-cd symmetrix/pair_symmetrix
-./install.sh ../../lammps-2Sep2026
+# Probably not needed for Symmetrix (inference)
+# pip3 install torch torchvision
+# pip3 install cuequivariance cuequivariance-torch cuequivariance-ops-torch-cu13
+# pip3 install cupy-cuda13x
+# pip3 install mace-torch
+
+cd symmetrix/symmetrix
+pip install .
 cd ../..
 
-mkdir lammps-2Sep2026/build-symmetrix
-cd lammps-2Sep2026/build-symmetrix
+LAMMPS_FOLDER="lammps-30Sep2026"
+
+cd symmetrix/pair_symmetrix
+./install.sh "../../${LAMMPS_FOLDER}"
+cd ../..
+
+rm -rf "${LAMMPS_FOLDER}/build-symmetrix"
+mkdir -p "${LAMMPS_FOLDER}/build-symmetrix"
+cd "${LAMMPS_FOLDER}/build-symmetrix"
+
+export CC=/usr/bin/gcc
+export CXX=/usr/bin/g++
 
 cmake \
+    -D CMAKE_BUILD_TYPE=Release \
+    -D CMAKE_CXX_STANDARD=20 \
+    -D CMAKE_C_COMPILER=${CC} \
+    -D CMAKE_CXX_COMPILER=${CXX} \
+    -D CMAKE_Fortran_COMPILER=ftn \
+    -D CMAKE_CXX_STANDARD_REQUIRED=ON \
+    -D CMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -march=native -ffast-math" \
     -D SYMMETRIX_KOKKOS=on \
     -D SYMMETRIX_SPHERICART_CUDA=on \
     -D PKG_KOKKOS=on \
@@ -19,6 +42,7 @@ cmake \
     -D Kokkos_ENABLE_SERIAL=on \
     -D Kokkos_ENABLE_AGGRESSIVE_VECTORIZATION=on \
     -D FFT_KOKKOS=CUFFT \
+    -D BUILD_OMP=ON \
     -D BUILD_MPI=on \
     -D PKG_PYTHON=on \
     -D BUILD_LIB=on \
@@ -39,8 +63,16 @@ cmake \
     -D PKG_EXTRA-COMMAND=on \
     -D PKG_MC=on \
     -D PKG_MEAM=on \
+    -D CMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=OFF \
+    -D CMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES=OFF \
     ../cmake
 
-make -j 56
+ulimit -S -s 65536
 
+make -j 56
 make install-python
+cd ../..
+
+# Install other libraries
+pip3 install ase scipy matplotlib mpi4py cython
+pip3 install -U ovito
