@@ -67,17 +67,22 @@ def lammps_topology(lmp, substrate_file, ff_file, sub_an_list, ada_an_list,
     group adatoms type {types_ada}
     """
     if ff_style=='eam/alloy' or ff_style=='eam' or ff_style=='eam/fs' :
-        topology+=f"""pair_style {ff_style} 
+        topology+=f"""pair_style {ff_style}
         pair_coeff * * {ff_file} {type_names_string}
         """
-    if ff_style=='meam' or ff_style=='meam/ms' :
-        topology+=f"""pair_style {ff_style} 
+    elif ff_style=='meam' or ff_style=='meam/ms' :
+        topology+=f"""pair_style {ff_style}
         pair_coeff * * {ff_meam_lib} {ff_file} {type_names_string}
         """
-    if ff_style=='mace' or ff_style=='mliap' :
+    elif ff_style=='mace' or ff_style=='mliap' :
         topology+=f"""pair_style mliap unified {ff_file} 0
         pair_coeff * * {type_names_string}
         """
+    elif ff_style=='symmetrix' :
+        topology+=f"""pair_style symmetrix/mace
+        pair_coeff * * {ff_file} {type_names_string}
+        """
+
     topology+=f"""
     neighbor 2.0 bin
     neigh_modify delay 0 every 1 check yes
